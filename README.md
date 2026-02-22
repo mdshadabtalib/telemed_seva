@@ -26,7 +26,7 @@ TeleMed Seva is a Flask-based telemedicine web application that allows patients 
 
 ---
 
-## 📁 Project Structur
+## 📁 Project Structure
 telemed_seva/app/
 │
 ├── app.py
@@ -50,15 +50,21 @@ git clone https://github.com/your-username/telemed_seva.git
 
 cd telemed_seva/app\
 
-python -m venv venv
+### Step 2: Create Virtual Environment
 
 .\venv\Scripts\activate
 
+### Step 3: Install Dependencies
+
 pip install -r requirements.txt
+
+### Step 4: Run the Application
 
 py .\app.py
 
+### Step 5: Open in Browser
+
 Open your browser and go to:
 
-http://127.0.0.1:5000\
+http://127.0.0.1:5000
 
