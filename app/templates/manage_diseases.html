@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block page_class %}page-doctor{% endblock %}
+{% block content %}
+<div class="max-w-6xl mx-auto">
+  <div class="card">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 class="text-2xl font-bold">Manage Health Information</h2>
+        <p class="text-gray-600 text-sm mt-1">Add and manage disease information for the health library</p>
+      </div>
+      <a href="{{ url_for('add_disease') }}" class="btn-modern btn-success-modern">📚 Add Disease</a>
+    </div>
+
+    {% if diseases %}
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b">
+            <th class="text-left p-3 text-sm font-medium text-gray-600">Disease Name</th>
+            <th class="text-left p-3 text-sm font-medium text-gray-600">Category</th>
+            <th class="text-left p-3 text-sm font-medium text-gray-600">Video</th>
+            <th class="text-left p-3 text-sm font-medium text-gray-600">Updated</th>
+            <th class="text-right p-3 text-sm font-medium text-gray-600">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for disease in diseases %}
+          <tr class="border-b hover:bg-gray-50">
+            <td class="p-3">
+              <div class="font-medium">{{ disease.name }}</div>
+              {% if disease.description %}
+              <div class="text-xs text-gray-500">{{ disease.description[:60] }}...</div>
+              {% endif %}
+            </td>
+            <td class="p-3">
+              {% if disease.category %}
+              <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">{{ disease.category }}</span>
+              {% else %}
+              <span class="text-gray-400">-</span>
+              {% endif %}
+            </td>
+            <td class="p-3">
+              {% if disease.youtube_link %}
+              <span class="text-green-600">✓</span>
+              {% else %}
+              <span class="text-gray-400">-</span>
+              {% endif %}
+            </td>
+            <td class="p-3 text-sm text-gray-500">
+              {{ disease.updated_at.strftime('%Y-%m-%d') if disease.updated_at else disease.created_at.strftime('%Y-%m-%d') }}
+            </td>
+            <td class="p-3 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <a href="{{ url_for('disease_detail', disease_id=disease.id) }}" target="_blank" 
+                   class="px-3 py-1 text-xs bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition font-medium">👁️ View</a>
+                <a href="{{ url_for('edit_disease', disease_id=disease.id) }}" 
+                   class="px-3 py-1 text-xs bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition font-medium">✏️ Edit</a>
+                <form method="post" action="{{ url_for('delete_disease', disease_id=disease.id) }}" class="inline" onsubmit="return confirm('Delete this disease information?')">
+                  <button type="submit" class="px-3 py-1 text-xs bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition font-medium">🗑️ Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center py-12">
+      <div class="text-6xl mb-4">📚</div>
+      <p class="text-gray-500 mb-4">No disease information added yet</p>
+      <a href="{{ url_for('add_disease') }}" class="btn-modern btn-success-modern inline-flex">📚 Add First Disease</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

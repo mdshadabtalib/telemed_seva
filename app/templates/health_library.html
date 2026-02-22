@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block page_class %}page-health-library{% endblock %}
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+  <div class="card">
+    <div class="mb-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-3xl font-bold mb-2">🏥 Health Library</h2>
+          <p class="text-gray-600">Learn about common diseases, their symptoms, and remedies</p>
+        </div>
+        <div id="connection-status" class="hidden px-4 py-2 rounded-lg">
+          <div id="online-status" class="flex items-center text-green-600">
+            <span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+            Online
+          </div>
+          <div id="offline-status" class="hidden flex items-center text-orange-600">
+            <span class="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
+            Offline Mode
+          </div>
+        </div>
+      </div>
+      <div id="offline-notice" class="hidden mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm">
+        <strong>📶 Offline Mode:</strong> You can browse all health information offline. YouTube videos will be unavailable until you reconnect to the internet.
+      </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <form method="get" class="mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="md:col-span-2">
+          <input type="text" name="search" value="{{ search }}" 
+                 placeholder="Search for a disease..." 
+                 class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-200">
+        </div>
+        <div>
+          <select name="category" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-200">
+            <option value="">All Categories</option>
+            {% for cat in categories %}
+            <option value="{{ cat }}" {% if cat == selected_category %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="flex gap-2 mt-4">
+        <button type="submit" class="btn-modern btn-primary-modern">🔍 Search Diseases</button>
+        <a href="{{ url_for('health_library') }}" class="px-4 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition font-medium">🔄 Clear Filters</a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Disease Cards -->
+  {% if diseases %}
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for disease in diseases %}
+    <div class="card hover:shadow-lg transition-shadow cursor-pointer" onclick="window.location='{{ url_for('disease_detail', disease_id=disease.id) }}'">
+      <div class="flex justify-between items-start mb-3">
+        <h3 class="text-xl font-semibold text-gray-800">{{ disease.name }}</h3>
+        {% if disease.category %}
+        <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">{{ disease.category }}</span>
+        {% endif %}
+      </div>
+      
+      {% if disease.description %}
+      <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ disease.description }}</p>
+      {% endif %}
+      
+      <div class="text-sm text-gray-500 mb-2">
+        <strong>Symptoms:</strong> {{ disease.symptoms[:100] }}{% if disease.symptoms|length > 100 %}...{% endif %}
+      </div>
+      
+      <div class="flex items-center justify-between mt-4 pt-3 border-t">
+        <span class="text-sm text-indigo-600 font-medium">Learn More →</span>
+        {% if disease.youtube_link %}
+        <span class="text-xs text-red-600">📺 Video Available</span>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="card text-center py-12">
+    <div class="text-6xl mb-4">🔍</div>
+    <h3 class="text-xl font-semibold text-gray-700 mb-2">No diseases found</h3>
+    <p class="text-gray-500">{% if search or selected_category %}Try different search terms or clear filters{% else %}No health information available yet{% endif %}</p>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Offline Detection Script -->
+<script>
+function updateConnectionStatus() {
+  const isOnline = navigator.onLine;
+  const connectionStatus = document.getElementById('connection-status');
+  const onlineStatus = document.getElementById('online-status');
+  const offlineStatus = document.getElementById('offline-status');
+  const offlineNotice = document.getElementById('offline-notice');
+  
+  if (connectionStatus) connectionStatus.classList.remove('hidden');
+  
+  if (!isOnline) {
+    // Offline mode
+    if (onlineStatus) onlineStatus.classList.add('hidden');
+    if (offlineStatus) offlineStatus.classList.remove('hidden');
+    if (offlineNotice) offlineNotice.classList.remove('hidden');
+  } else {
+    // Online mode
+    if (onlineStatus) onlineStatus.classList.remove('hidden');
+    if (offlineStatus) offlineStatus.classList.add('hidden');
+    if (offlineNotice) offlineNotice.classList.add('hidden');
+  }
+}
+
+// Check on page load
+updateConnectionStatus();
+
+// Listen for connection changes
+window.addEventListener('online', updateConnectionStatus);
+window.addEventListener('offline', updateConnectionStatus);
+</script>
+{% endblock %}

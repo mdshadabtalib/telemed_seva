@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block page_class %}page-pharmacy{% endblock %}
+{% block content %}
+<div class="space-y-6">
+  <div class="card">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 class="text-2xl font-semibold">Pharmacy Dashboard</h2>
+        <div class="muted">{{ current_user.shop_name or current_user.fullname }}</div>
+      </div>
+      <div class="flex gap-3">
+        <a href="{{ url_for('pharmacy_orders') }}" class="px-4 py-2 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-lg hover:from-teal-600 hover:to-cyan-600 transition shadow-md font-semibold">📝 View Orders</a>
+        <a href="{{ url_for('add_medicine') }}" class="btn-modern btn-success-modern">💊 Add Medicine</a>
+      </div>
+    </div>
+
+    {% if current_user.shop_address or current_user.shop_phone %}
+    <div class="mb-6 p-4 bg-slate-50 rounded-lg">
+      <div class="text-sm font-medium text-slate-700">Shop Information</div>
+      {% if current_user.shop_address %}
+      <div class="text-sm text-slate-600 mt-1">📍 {{ current_user.shop_address }}</div>
+      {% endif %}
+      {% if current_user.shop_phone %}
+      <div class="text-sm text-slate-600 mt-1">📞 {{ current_user.shop_phone }}</div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <h3 class="text-lg font-semibold mb-3">Your Medicines</h3>
+    {% if medicines %}
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b">
+              <th class="text-left p-3 text-sm font-medium text-slate-600">Medicine Name</th>
+              <th class="text-left p-3 text-sm font-medium text-slate-600">Category</th>
+              <th class="text-left p-3 text-sm font-medium text-slate-600">Price</th>
+              <th class="text-left p-3 text-sm font-medium text-slate-600">Stock</th>
+              <th class="text-right p-3 text-sm font-medium text-slate-600">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for med in medicines %}
+            <tr class="border-b hover:bg-slate-50">
+              <td class="p-3">
+                <div class="font-medium">{{ med.name }}</div>
+                {% if med.description %}
+                <div class="text-xs text-slate-500 mt-1">{{ med.description[:50] }}{% if med.description|length > 50 %}...{% endif %}</div>
+                {% endif %}
+              </td>
+              <td class="p-3 text-sm">{{ med.category or '-' }}</td>
+              <td class="p-3 text-sm font-medium text-green-600">₹{{ "%.2f"|format(med.price) }}</td>
+              <td class="p-3 text-sm">
+                <span class="{% if med.stock > 10 %}text-green-600{% elif med.stock > 0 %}text-yellow-600{% else %}text-red-600{% endif %}">
+                  {{ med.stock }} units
+                </span>
+              </td>
+              <td class="p-3 text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <a href="{{ url_for('edit_medicine', med_id=med.id) }}" class="text-xs text-indigo-600 hover:underline">Edit</a>
+                  <form method="post" action="{{ url_for('delete_medicine', med_id=med.id) }}" class="inline" onsubmit="return confirm('Delete this medicine?')">
+                    <button type="submit" class="text-xs text-red-600 hover:underline">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="text-center py-8 text-slate-500">
+        <div class="text-4xl mb-3">💊</div>
+        <div>No medicines added yet. Click "Add Medicine" to start.</div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

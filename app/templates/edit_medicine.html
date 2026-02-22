@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-2xl mx-auto card">
+  <div class="mb-6">
+    <h2 class="text-2xl font-semibold">Edit Medicine</h2>
+    <div class="muted">Update medicine details</div>
+  </div>
+
+  <form method="post" class="space-y-4">
+    <div>
+      <label class="block text-sm font-medium">Medicine Name *</label>
+      <input name="name" value="{{ med.name }}" required class="w-full mt-2 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium">Description</label>
+      <textarea name="description" rows="3" class="w-full mt-2 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200">{{ med.description or '' }}</textarea>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <label class="block text-sm font-medium">Category</label>
+        <input name="category" value="{{ med.category or '' }}" class="w-full mt-2 p-3 border rounded-lg" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Price (₹) *</label>
+        <input name="price" type="number" step="0.01" value="{{ med.price }}" required class="w-full mt-2 p-3 border rounded-lg" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Stock (units) *</label>
+        <input name="stock" type="number" value="{{ med.stock }}" required class="w-full mt-2 p-3 border rounded-lg" />
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between pt-4">
+      <a href="{{ url_for('pharmacy_dashboard') }}" class="text-sm text-slate-600 hover:text-slate-800">← Back to Dashboard</a>
+      <button type="submit" class="btn-primary">Update Medicine</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block page_class %}page-doctor{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+  <!-- Sidebar -->
+  <aside class="lg:col-span-1 card sticky top-6">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-semibold">{{ current_user.fullname.split(' ')[0][0] }}</div>
+      <div>
+        <div class="font-semibold">Dr. {{ current_user.fullname }}</div>
+        <div class="muted">{{ current_user.specialization or 'General' }}</div>
+      </div>
+    </div>
+    <nav class="space-y-2">
+      <a href="{{ url_for('doctor_dashboard') }}" class="block px-3 py-2 rounded-lg bg-indigo-50 text-indigo-700 font-medium">Appointments</a>
+      <a href="{{ url_for('manage_diseases') }}" class="block px-3 py-2 rounded-lg hover:bg-slate-100">📚 Manage Health Info</a>
+      <a href="{{ url_for('logout') }}" class="block px-3 py-2 rounded-lg hover:bg-slate-100">Logout</a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <section class="lg:col-span-3 space-y-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-2xl font-semibold">Today's Appointments</h2>
+        <div class="muted">Manage consultations and prescriptions</div>
+      </div>
+      <div class="muted text-sm">Tip: click "Consult" to write prescriptions</div>
+    </div>
+
+    <div class="card overflow-x-auto">
+      <table class="w-full text-left">
+        <thead class="text-slate-500 text-sm">
+          <tr>
+            <th class="py-3">#</th>
+            <th>Patient</th>
+            <th>When</th>
+            <th>Status</th>
+            <th class="text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y">
+          {% for a in appts %}
+          <tr class="align-top">
+            <td class="py-4 w-12">{{ a.id }}</td>
+            <td>
+              <div class="font-medium">{{ patient_map[a.patient_id].fullname }}</div>
+              <div class="muted text-xs">Patient ID: {{ a.patient_id }}</div>
+            </td>
+            <td class="py-4">{{ a.datetime }}</td>
+            <td class="py-4">
+              {% if a.status == 'Scheduled' %}
+                <span class="px-2 py-1 rounded-full text-xs bg-indigo-50 text-indigo-700">{{ a.status }}</span>
+              {% else %}
+                <span class="px-2 py-1 rounded-full text-xs bg-slate-100 text-slate-700">{{ a.status }}</span>
+              {% endif %}
+            </td>
+            <td class="py-4 text-right">
+              <a class="inline-block px-3 py-1 text-sm border rounded-lg mr-2" href="{{ a.room }}" target="_blank">Join</a>
+              <a class="inline-block px-3 py-1 text-sm bg-emerald-600 text-white rounded-lg" href="{{ url_for('consult', appt_id=a.id) }}">Consult</a>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" class="py-8 text-center muted">No appointments yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,572 @@
+/* ========================================
+   TELEMED PRO - ADVANCED MODERN DESIGN
+   ======================================== */
+
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+/* Root Variables - Color Palette */
+:root {
+  /* Primary Colors - Medical Blue & Teal */
+  --primary-50: #e0f2fe;
+  --primary-100: #bae6fd;
+  --primary-200: #7dd3fc;
+  --primary-300: #38bdf8;
+  --primary-400: #0ea5e9;
+  --primary-500: #0284c7;
+  --primary-600: #0369a1;
+  --primary-700: #075985;
+  --primary-800: #0c4a6e;
+  --primary-900: #082f49;
+  
+  /* Accent Colors - Purple & Pink */
+  --accent-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --accent-purple: #8b5cf6;
+  --accent-pink: #ec4899;
+  --accent-teal: #14b8a6;
+  
+  /* Neutral Colors */
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  
+  /* Semantic Colors */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  
+  /* Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  
+  /* Border Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+}
+
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+  color: var(--gray-900);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure main content fills available space */
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Content container proper centering */
+main > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ========================================
+   PAGE-SPECIFIC GRADIENT BACKGROUNDS
+   ======================================== */
+
+/* Homepage - Light Sky & Ocean */
+.page-home body,
+body.page-home {
+  background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 25%, #80deea 50%, #4dd0e1 75%, #26c6da 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+/* Login - Light Blue & Mint */
+.page-login body,
+body.page-login {
+  background: linear-gradient(135deg, #e1f5fe 0%, #b3e5fc 25%, #81d4fa 50%, #4fc3f7 75%, #29b6f6 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 18s ease infinite;
+}
+
+/* Register - Light Green & Mint */
+.page-register body,
+body.page-register {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 25%, #a5d6a7 50%, #81c784 75%, #66bb6a 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 16s ease infinite;
+}
+
+/* Patient Dashboard - Soft Sky Blue */
+.page-patient body,
+body.page-patient {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 25%, #90caf9 50%, #64b5f6 75%, #42a5f5 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 20s ease infinite;
+}
+
+/* Doctor Dashboard - Light Teal & Aqua */
+.page-doctor body,
+body.page-doctor {
+  background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 25%, #80cbc4 50%, #4db6ac 75%, #26a69a 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 17s ease infinite;
+}
+
+/* Pharmacy Dashboard - Light Green Meadow */
+.page-pharmacy body,
+body.page-pharmacy {
+  background: linear-gradient(135deg, #f1f8e9 0%, #dcedc8 25%, #c5e1a5 50%, #aed581 75%, #9ccc65 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 19s ease infinite;
+}
+
+/* Health Library - Soft Sky */
+.page-health-library body,
+body.page-health-library {
+  background: linear-gradient(135deg, #e8eaf6 0%, #c5cae9 25%, #9fa8da 50%, #7986cb 75%, #5c6bc0 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 21s ease infinite;
+}
+
+/* Medicine Search - Light Turquoise */
+.page-medicine body,
+body.page-medicine {
+  background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 25%, #80deea 50%, #4dd0e1 75%, #26c6da 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 14s ease infinite;
+}
+
+/* Appointments - Seafoam Green */
+.page-appointment body,
+body.page-appointment {
+  background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 25%, #80cbc4 50%, #4db6ac 75%, #26a69a 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 16s ease infinite;
+}
+
+/* Consultation/Chat - Light Ocean Blue */
+.page-consult body,
+body.page-consult {
+  background: linear-gradient(135deg, #e1f5fe 0%, #b3e5fc 25%, #81d4fa 50%, #4fc3f7 75%, #29b6f6 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 22s ease infinite;
+}
+
+/* Orders - Mint Green */
+.page-orders body,
+body.page-orders {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 25%, #a5d6a7 50%, #81c784 75%, #66bb6a 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 18s ease infinite;
+}
+
+/* Prescriptions - Light Sky & Cyan */
+.page-prescription body,
+body.page-prescription {
+  background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 25%, #80deea 50%, #4dd0e1 75%, #26c6da 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 17s ease infinite;
+}
+
+/* Forgot Password - Pale Blue */
+.page-forgot body,
+body.page-forgot {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 25%, #90caf9 50%, #64b5f6 75%, #42a5f5 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 20s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+/* Glassmorphism Card */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-2xl);
+  padding: 2rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+}
+
+.glass-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 30px 60px -15px rgb(0 0 0 / 0.3);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Enhanced Header */
+.modern-header {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* Profile Avatar */
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  border: 3px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.avatar:hover {
+  transform: scale(1.1) rotate(5deg);
+  border-color: white;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+.avatar-lg {
+  width: 80px;
+  height: 80px;
+  border-width: 4px;
+}
+
+.avatar-xl {
+  width: 120px;
+  height: 120px;
+  border-width: 5px;
+}
+
+.avatar-sm {
+  width: 32px;
+  height: 32px;
+  border-width: 2px;
+}
+
+/* Profile Upload Button */
+.upload-avatar-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-pink) 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-xl);
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+}
+
+.upload-avatar-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.6);
+}
+
+/* Modern Button Styles */
+.btn-modern {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 2rem;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.btn-modern::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn-modern:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.btn-primary-modern {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary-modern:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 35px rgba(102, 126, 234, 0.6);
+}
+
+.btn-success-modern {
+  background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+  color: white;
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+}
+
+.btn-success-modern:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 35px rgba(16, 185, 129, 0.6);
+}
+
+/* Modern Input Fields */
+.input-modern {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(102, 126, 234, 0.2);
+  border-radius: var(--radius-lg);
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.input-modern:focus {
+  background: white;
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Dashboard Cards */
+.dashboard-card {
+  background: white;
+  border-radius: var(--radius-2xl);
+  padding: 2rem;
+  box-shadow: var(--shadow-lg);
+  transition: all 0.4s ease;
+  border: 1px solid rgba(102, 126, 234, 0.1);
+  width: 100%;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-2xl);
+  border-color: rgba(102, 126, 234, 0.3);
+}
+
+/* Stats Card */
+.stat-card {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-xl);
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+  animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Badge */
+.badge-modern {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.875rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-success {
+  background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+  color: white;
+}
+
+.badge-warning {
+  background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+  color: white;
+}
+
+.badge-info {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  color: white;
+}
+
+/* Table Modern */
+.table-modern {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.5rem;
+}
+
+.table-modern thead th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.table-modern tbody tr {
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+}
+
+.table-modern tbody tr:hover {
+  transform: translateX(4px);
+  box-shadow: var(--shadow-md);
+  background: linear-gradient(90deg, white 0%, rgba(102, 126, 234, 0.05) 100%);
+}
+
+.table-modern tbody td {
+  padding: 1.25rem 1rem;
+}
+
+/* Loading Animation */
+.loader {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(102, 126, 234, 0.2);
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Toast Notification */
+.toast {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  min-width: 300px;
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: 1rem 1.5rem;
+  box-shadow: var(--shadow-2xl);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  animation: slideIn 0.4s ease;
+  z-index: 9999;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .glass-card {
+    padding: 1.5rem;
+  }
+  
+  .btn-modern {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .avatar-xl {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+/* Scroll Bar Custom */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--gray-100);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
+}

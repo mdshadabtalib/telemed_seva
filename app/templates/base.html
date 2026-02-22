@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Telemed — Professional UI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* small custom polish (keeps tailwind classes concise) */
+    .card { @apply bg-white rounded-2xl shadow-md p-6 w-full; }
+    .btn-primary { @apply bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg; }
+    .btn-ghost { @apply bg-white/5 hover:bg-white/10 text-slate-700 border border-transparent py-2 px-3 rounded-lg; }
+    .muted { @apply text-slate-500 text-sm; }
+    
+    /* Ensure proper layout */
+    html, body { height: 100%; }
+    body { display: flex; flex-direction: column; }
+    main { flex: 1; display: flex; flex-direction: column; }
+  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='custom.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='advanced.css') }}">
+</head>
+<body class="flex flex-col min-h-screen bg-slate-50 text-slate-800 antialiased {% block page_class %}{% endblock %}">
+  <header class="modern-header text-white">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center font-bold">TM</div>
+        <div>
+          <a href="{{ url_for('index') }}" class="text-lg font-semibold leading-tight">Telemed Online Seva</a>
+          <div class="text-xs opacity-90">Online Doctor Consultation</div>
+        </div>
+      </div>
+
+      <nav class="flex items-center gap-3">
+        {% if current_user.is_authenticated %}
+          {% if current_user.role == 'patient' %}
+          <a href="{{ url_for('health_library') }}" class="px-3 py-2 rounded hover:bg-white/10">🏥 Health Library</a>
+          <a href="{{ url_for('search_medicine') }}" class="px-3 py-2 rounded hover:bg-white/10">🔍 Find Medicine</a>
+          {% elif current_user.role == 'doctor' %}
+          <a href="{{ url_for('health_library') }}" class="px-3 py-2 rounded hover:bg-white/10">🏥 Health Library</a>
+          {% endif %}
+        {% endif %}
+        {% if current_user.is_authenticated %}
+          <div class="hidden sm:flex items-center gap-3">
+            <a href="{{ url_for('profile') }}" class="flex items-center gap-2 hover:opacity-80 transition">
+              {% if current_user.profile_image %}
+                <img src="{{ url_for('uploaded_file', filename=current_user.profile_image) }}" alt="Profile" class="avatar avatar-sm">
+              {% else %}
+                <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
+                  {{ current_user.fullname.split(' ')[0][0] }}
+                </div>
+              {% endif %}
+              <span class="font-semibold">{{ current_user.fullname }}</span>
+            </a>
+          </div>
+          <a href="{{ url_for('dashboard') }}" class="px-3 py-2 rounded hover:bg-white/10">Dashboard</a>
+          <a href="{{ url_for('logout') }}" class="btn-ghost">Logout</a>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="px-4 py-2 rounded-lg hover:bg-white/20 transition-all">Login</a>
+          <a href="{{ url_for('register') }}" class="px-4 py-2 bg-white text-purple-600 font-semibold rounded-lg hover:bg-white/90 transition-all shadow-lg">✨ Get Started</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <main class="flex-1 w-full">
+    <div class="max-w-7xl mx-auto px-6 py-10 w-full">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="space-y-3 mb-6">
+          {% for cat, msg in messages %}
+            <div class="p-3 rounded-lg {% if cat=='success' %}bg-emerald-50 border border-emerald-200{% elif cat=='danger' %}bg-rose-50 border border-rose-200{% else %}bg-white border{% endif %}">
+              <div class="text-sm">{{ msg }}</div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <footer class="border-t py-6 mt-auto bg-white/80 backdrop-blur-sm">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="text-sm text-slate-600">
+          <span class="font-semibold text-slate-800">© {{ datetime.utcnow().year }} Telemed Online Seva</span> · Your trusted partner in accessible healthcare
+        </div>
+        <div class="flex items-center gap-6 text-xs text-slate-500">
+          <span class="flex items-center gap-1">
+            <span class="text-teal-500">✓</span> Certified Doctors
+          </span>
+          <span class="flex items-center gap-1">
+            <span class="text-teal-500">✓</span> Secure Platform
+          </span>
+          <span class="flex items-center gap-1">
+            <span class="text-teal-500">✓</span> 24/7 Support
+          </span>
+        </div>
+        <div class="text-sm text-slate-600">
+          Empowering health with <span class="text-red-500">❤️</span> and innovation
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

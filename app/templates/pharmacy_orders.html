@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block page_class %}page-pharmacy{% endblock %}
+{% block content %}
+<div class="max-w-6xl mx-auto">
+  <div class="card">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 class="text-2xl font-bold">Medicine Orders</h2>
+        <p class="text-gray-600 text-sm mt-1">Manage and track customer medicine orders</p>
+      </div>
+      <div class="text-sm text-gray-500">Total Orders: <span class="font-bold text-teal-600">{{ orders|length }}</span></div>
+    </div>
+
+    {% if orders %}
+    <div class="space-y-4">
+      {% for order in orders %}
+      <div class="border rounded-lg p-4 hover:shadow-md transition">
+        <div class="flex justify-between items-start mb-3">
+          <div>
+            <h3 class="font-semibold text-lg">{{ order.medicine.name }}</h3>
+            <p class="text-sm text-gray-600">Order #{{ order.id }} • {{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+          </div>
+          <div>
+            <form method="post" action="{{ url_for('update_order_status', order_id=order.id) }}" class="inline">
+              <select name="status" onchange="this.form.submit()" 
+                      class="px-3 py-1 rounded-lg border text-sm font-medium cursor-pointer
+                      {% if order.status == 'Pending' %}bg-yellow-100 text-yellow-800 border-yellow-300
+                      {% elif order.status == 'Confirmed' %}bg-blue-100 text-blue-800 border-blue-300
+                      {% elif order.status == 'Completed' %}bg-green-100 text-green-800 border-green-300
+                      {% else %}bg-red-100 text-red-800 border-red-300{% endif %}">
+                <option value="Pending" {% if order.status == 'Pending' %}selected{% endif %}>Pending</option>
+                <option value="Confirmed" {% if order.status == 'Confirmed' %}selected{% endif %}>Confirmed</option>
+                <option value="Completed" {% if order.status == 'Completed' %}selected{% endif %}>Completed</option>
+                <option value="Cancelled" {% if order.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+              </select>
+            </form>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div>
+            <p><strong>Customer:</strong> {{ order.patient.fullname }}</p>
+            <p><strong>Email:</strong> {{ order.patient.email }}</p>
+          </div>
+          <div>
+            <p><strong>Quantity:</strong> {{ order.quantity }} units</p>
+            <p><strong>Total Price:</strong> ₹{{ "%.2f"|format(order.total_price) }}</p>
+          </div>
+          <div>
+            <p><strong>Contact:</strong> {{ order.phone }}</p>
+          </div>
+        </div>
+
+        <div class="mt-3 pt-3 border-t">
+          <p class="text-sm"><strong>Delivery Address:</strong> {{ order.delivery_address }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-12">
+      <p class="text-gray-500">No orders received yet.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

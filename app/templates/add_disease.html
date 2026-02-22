@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block page_class %}page-doctor{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <div class="card">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 class="text-2xl font-bold">Add Disease Information</h2>
+        <p class="text-gray-600 text-sm mt-1">Provide comprehensive information for the health library</p>
+      </div>
+      <a href="{{ url_for('manage_diseases') }}" class="px-4 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition font-medium">← Back</a>
+    </div>
+
+    <form method="post" class="space-y-6">
+      <div>
+        <label class="block font-medium mb-2">Disease Name <span class="text-red-600">*</span></label>
+        <input type="text" name="name" required 
+               class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-200"
+               placeholder="e.g., Common Cold, Diabetes, Hypertension">
+      </div>
+
+      <div>
+        <label class="block font-medium mb-2">Category</label>
+        <select name="category" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-200">
+          <option value="">Select a category</option>
+          <option value="Infectious">Infectious</option>
+          <option value="Chronic">Chronic</option>
+          <option value="Respiratory">Respiratory</option>
+          <option value="Cardiovascular">Cardiovascular</option>
+          <option value="Digestive">Digestive</option>
+          <option value="Neurological">Neurological</option>
+          <option value="Metabolic">Metabolic</option>
+          <option value="Skin">Skin</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block font-medium mb-2">Description</label>
+        <textarea name="description" rows="3" 
+                  class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-200"
+                  placeholder="Brief overview of the disease"></textarea>
+      </div>
+
+      <div>
+        <label class="block font-medium mb-2">Symptoms <span class="text-red-600">*</span></label>
+        <textarea name="symptoms" rows="5" required 
+                  class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-200"
+                  placeholder="List the common symptoms (one per line or separated by commas)"></textarea>
+        <p class="text-sm text-gray-500 mt-1">Enter each symptom on a new line or separate with commas</p>
+      </div>
+
+      <div>
+        <label class="block font-medium mb-2">Remedies & Treatment <span class="text-red-600">*</span></label>
+        <textarea name="remedies" rows="6" required 
+                  class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-200"
+                  placeholder="Describe treatment options, home remedies, and medical interventions"></textarea>
+      </div>
+
+      <div>
+        <label class="block font-medium mb-2">Prevention Tips</label>
+        <textarea name="prevention" rows="4" 
+                  class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-200"
+                  placeholder="How to prevent this disease"></textarea>
+      </div>
+
+      <div>
+        <label class="block font-medium mb-2">YouTube Video Link</label>
+        <input type="url" name="youtube_link" 
+               class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-200"
+               placeholder="https://www.youtube.com/watch?v=...">
+        <p class="text-sm text-gray-500 mt-1">Paste a YouTube video URL for educational purposes</p>
+      </div>
+
+      <div class="flex gap-3">
+        <button type="submit" class="flex-1 btn-modern btn-success-modern">✔️ Add Disease Information</button>
+        <a href="{{ url_for('manage_diseases') }}" class="flex-1 text-center px-4 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition font-medium">❌ Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

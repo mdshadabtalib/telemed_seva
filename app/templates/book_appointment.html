@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block page_class %}page-appointment{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto card">
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h3 class="text-xl font-semibold">Book Appointment</h3>
+      <div class="muted">Choose a specialist and schedule a consultation</div>
+    </div>
+    <div class="text-sm muted">Tip: time is free-text in demo; use a readable format</div>
+  </div>
+
+  <form method="post" class="space-y-4">
+    <div>
+      <label class="block text-sm font-medium">Select Doctor</label>
+      <select name="doctor_id" required class="w-full mt-2 p-3 border rounded-lg">
+        {% for d in doctors %}
+          <option value="{{ d.id }}">{{ d.fullname }} — {{ d.specialization or 'General' }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium">📅 Appointment Date & Time</label>
+        <input name="datetime" type="datetime-local" required 
+               class="w-full mt-2 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200" 
+               min="{{ (datetime.utcnow() + timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M') }}"
+               value="{{ (datetime.utcnow() + timedelta(hours=2)).strftime('%Y-%m-%dT%H:%M') }}" />
+        <p class="text-xs text-gray-500 mt-1">Select a date and time for your consultation</p>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">🎥 Consultation Mode</label>
+        <select class="w-full mt-2 p-3 border rounded-lg bg-gray-50" disabled>
+          <option>Video Call (Jitsi Meet)</option>
+        </select>
+        <p class="text-xs text-gray-500 mt-1">Secure HD video consultation</p>
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium">Notes / Symptoms</label>
+      <textarea name="notes" rows="4" class="w-full mt-2 p-3 border rounded-lg"></textarea>
+    </div>
+
+    <div class="flex gap-3">
+      <a href="{{ url_for('patient_dashboard') }}" class="flex-1 text-center px-4 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition font-medium">❌ Cancel</a>
+      <button class="flex-1 btn-modern btn-success-modern">📍 Book Appointment</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

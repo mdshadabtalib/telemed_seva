@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block page_class %}page-register{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto glass-card">
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h2 class="text-2xl font-semibold">Create your account</h2>
+      <div class="muted">Sign up as a patient, doctor, or pharmacy</div>
+    </div>
+    <div class="text-sm muted">Already have account? <a class="text-indigo-600" href="{{ url_for('login') }}">Login</a></div>
+  </div>
+
+  <form method="post" class="space-y-4">
+    <div>
+      <label class="block text-sm font-medium">Full name</label>
+      <input name="fullname" required class="input-modern" />
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium">Email</label>
+        <input name="email" type="email" required class="input-modern" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Password</label>
+        <div class="relative">
+          <input id="regPassword" name="password" type="password" required class="input-modern pr-12" />
+          <button type="button" onclick="toggleRegPassword()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700">
+            <span id="regEyeIcon">👁️</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium">Role</label>
+        <select name="role" id="role" class="input-modern" onchange="toggleFields()" required>
+          <option value="">Select Role</option>
+          <option value="patient">Patient</option>
+          <option value="doctor">Doctor</option>
+          <option value="pharmacy">Pharmacy</option>
+        </select>
+      </div>
+      <div id="doctor-field" style="display: none;">
+        <label class="block text-sm font-medium">Specialization (doctors)</label>
+        <select name="specialization" class="input-modern">
+          <option value="">Select Specialization</option>
+          <option value="General Physician">General Physician</option>
+          <option value="Cardiologist">Cardiologist</option>
+          <option value="Dermatologist">Dermatologist</option>
+          <option value="Pediatrician">Pediatrician</option>
+          <option value="Orthopedic">Orthopedic</option>
+          <option value="Gynecologist">Gynecologist</option>
+          <option value="ENT Specialist">ENT Specialist</option>
+          <option value="Neurologist">Neurologist</option>
+          <option value="Psychiatrist">Psychiatrist</option>
+          <option value="Dentist">Dentist</option>
+          <option value="Ophthalmologist">Ophthalmologist (Eye)</option>
+          <option value="Pulmonologist">Pulmonologist (Lungs)</option>
+          <option value="Gastroenterologist">Gastroenterologist (Digestive)</option>
+          <option value="Urologist">Urologist</option>
+          <option value="Endocrinologist">Endocrinologist (Diabetes)</option>
+          <option value="Oncologist">Oncologist (Cancer)</option>
+          <option value="Radiologist">Radiologist</option>
+          <option value="Anesthesiologist">Anesthesiologist</option>
+          <option value="Pathologist">Pathologist</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="pharmacy-fields" style="display: none;" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium">Shop Name</label>
+        <input name="shop_name" class="input-modern" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Shop Address</label>
+        <input name="shop_address" class="input-modern" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Phone Number</label>
+        <input name="shop_phone" type="tel" class="input-modern" />
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between">
+      <div class="muted">By creating an account you agree to demo terms.</div>
+      <button class="btn-modern btn-success-modern">✨ Create account</button>
+    </div>
+  </form>
+</div>
+
+<script>
+function toggleFields() {
+  const role = document.getElementById('role').value;
+  const doctorField = document.getElementById('doctor-field');
+  const pharmacyFields = document.getElementById('pharmacy-fields');
+  
+  if (role === 'doctor') {
+    doctorField.style.display = 'block';
+    pharmacyFields.style.display = 'none';
+  } else if (role === 'pharmacy') {
+    doctorField.style.display = 'none';
+    pharmacyFields.style.display = 'block';
+  } else {
+    doctorField.style.display = 'none';
+    pharmacyFields.style.display = 'none';
+  }
+}
+}
+
+function toggleRegPassword() {
+  const passwordInput = document.getElementById('regPassword');
+  const eyeIcon = document.getElementById('regEyeIcon');
+  if (passwordInput.type === 'password') {
+    passwordInput.type = 'text';
+    eyeIcon.textContent = '🚫';
+  } else {
+    passwordInput.type = 'password';
+    eyeIcon.textContent = '👁️';
+  }
+}
+</script>
+{% endblock %}

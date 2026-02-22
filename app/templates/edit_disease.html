@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <div class="card">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-2xl font-bold">Edit Disease Information</h2>
+      <a href="{{ url_for('manage_diseases') }}" class="px-4 py-2 border rounded-lg hover:bg-gray-50">← Back</a>
+    </div>
+
+    <form method="post" class="space-y-6">
+      <div>
+        <label class="block font-medium mb-2">Disease Name <span class="text-red-600">*</span></label>
+        <input type="text" name="name" value="{{ disease.name }}" required 
+               class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-200"
+               placeholder="e.g., Common Cold, Diabetes, Hypertension">
+      </div>
+
+      <div>
+        <label class="block font-medium mb-2">Category</label>
+        <select name="category" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-200">
+          <option value="">Select a category</option>
+          <option value="Infectious" {% if disease.category == 'Infectious' %}selected{% endif %}>Infectious</option>
+          <option value="Chronic" {% if disease.category == 'Chronic' %}selected{% endif %}>Chronic</option>
+          <option value="Respiratory" {% if disease.category == 'Respiratory' %}selected{% endif %}>Respiratory</option>
+          <option value="Cardiovascular" {% if disease.category == 'Cardiovascular' %}selected{% endif %}>Cardiovascular</option>
+          <option value="Digestive" {% if disease.category == 'Digestive' %}selected{% endif %}>Digestive</option>
+          <option value="Neurological" {% if disease.category == 'Neurological' %}selected{% endif %}>Neurological</option>
+          <option value="Metabolic" {% if disease.category == 'Metabolic' %}selected{% endif %}>Metabolic</option>
+          <option value="Skin" {% if disease.category == 'Skin' %}selected{% endif %}>Skin</option>
+          <option value="Other" {% if disease.category == 'Other' %}selected{% endif %}>Other</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block font-medium mb-2">Description</label>
+        <textarea name="description" rows="3" 
+                  class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-200"
+                  placeholder="Brief overview of the disease">{{ disease.description or '' }}</textarea>
+      </div>
+
+      <div>
+        <label class="block font-medium mb-2">Symptoms <span class="text-red-600">*</span></label>
+        <textarea name="symptoms" rows="5" required 
+                  class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-200"
+                  placeholder="List the common symptoms (one per line or separated by commas)">{{ disease.symptoms }}</textarea>
+        <p class="text-sm text-gray-500 mt-1">Enter each symptom on a new line or separate with commas</p>
+      </div>
+
+      <div>
+        <label class="block font-medium mb-2">Remedies & Treatment <span class="text-red-600">*</span></label>
+        <textarea name="remedies" rows="6" required 
+                  class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-200"
+                  placeholder="Describe treatment options, home remedies, and medical interventions">{{ disease.remedies }}</textarea>
+      </div>
+
+      <div>
+        <label class="block font-medium mb-2">Prevention Tips</label>
+        <textarea name="prevention" rows="4" 
+                  class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-200"
+                  placeholder="How to prevent this disease">{{ disease.prevention or '' }}</textarea>
+      </div>
+
+      <div>
+        <label class="block font-medium mb-2">YouTube Video Link</label>
+        <input type="url" name="youtube_link" value="{{ disease.youtube_link or '' }}"
+               class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-200"
+               placeholder="https://www.youtube.com/watch?v=...">
+        <p class="text-sm text-gray-500 mt-1">Paste a YouTube video URL for educational purposes</p>
+      </div>
+
+      <div class="flex gap-3">
+        <button type="submit" class="flex-1 btn-primary">Update Disease Information</button>
+        <a href="{{ url_for('manage_diseases') }}" class="flex-1 text-center px-4 py-2 border rounded-lg hover:bg-gray-50">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

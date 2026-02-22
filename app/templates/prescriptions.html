@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block page_class %}page-prescription{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto card">
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h3 class="text-xl font-semibold">Prescriptions for {{ patient.fullname }}</h3>
+      <div class="muted">History & notes</div>
+    </div>
+    <div class="muted">Total: <span class="font-semibold">{{ pres|length }}</span></div>
+  </div>
+
+  <div class="space-y-4">
+    {% for p in pres %}
+      <div class="p-4 border rounded-lg">
+        <div class="flex items-center justify-between">
+          <div class="text-sm muted">By Doctor ID: {{ p.doctor_id }}</div>
+          <div class="text-xs muted">{{ p.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+        </div>
+        <div class="mt-2">{{ p.text }}</div>
+      </div>
+    {% else %}
+      <div class="muted">No prescriptions found for this patient.</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

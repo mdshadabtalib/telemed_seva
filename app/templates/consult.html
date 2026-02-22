@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block page_class %}page-consult{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto card">
+  <div class="flex items-start justify-between mb-4 gap-4">
+    <div>
+      <div class="muted text-sm">Appointment</div>
+      <h3 class="text-xl font-semibold">#{{ appt.id }} — {{ appt.datetime }}</h3>
+      <div class="muted">Patient ID: {{ appt.patient_id }}</div>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="{{ url_for('chat', appt_id=appt.id) }}" class="px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">💬 Chat</a>
+      <a href="{{ appt.room }}" target="_blank" class="btn-primary">🎥 Video</a>
+      <a href="{{ url_for('dashboard') }}" class="px-3 py-2 border rounded-lg">Back</a>
+    </div>
+  </div>
+
+  <section class="mb-6">
+    <h4 class="font-medium mb-3">Prescriptions</h4>
+    <div class="space-y-3">
+      {% for p in prescriptions %}
+        <div class="p-3 border rounded-lg">
+          <div class="text-xs muted">{{ p.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+          {% if p.text %}
+            <div class="mt-1">{{ p.text }}</div>
+          {% endif %}
+          {% if p.image_url %}
+            <div class="mt-2">
+              <img src="{{ url_for('uploaded_file', filename=p.image_url) }}" alt="Prescription" class="max-w-full h-auto rounded-lg border" style="max-height: 400px;">
+              <a href="{{ url_for('uploaded_file', filename=p.image_url) }}" target="_blank" class="text-sm text-blue-600 hover:underline mt-1 inline-block">View full size</a>
+            </div>
+          {% endif %}
+        </div>
+      {% else %}
+        <div class="muted">No prescriptions yet.</div>
+      {% endfor %}
+    </div>
+  </section>
+
+  {% if current_user.role=='doctor' %}
+  <section>
+    <h4 class="font-medium mb-2">Write Prescription</h4>
+    <form method="post" enctype="multipart/form-data" class="space-y-3">
+      <div>
+        <label class="block text-sm font-medium mb-1">Prescription Text (Optional)</label>
+        <textarea name="prescription" rows="5" class="w-full p-3 border rounded-lg" placeholder="Write prescription details here..."></textarea>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Or Upload Prescription Image (JPG, PNG, GIF)</label>
+        <input type="file" name="prescription_image" accept="image/*" class="w-full p-2 border rounded-lg">
+        <p class="text-xs text-gray-500 mt-1">Maximum file size: 16MB. Accepted formats: JPG, PNG, GIF</p>
+      </div>
+      <div class="flex gap-3">
+        <a href="{{ url_for('dashboard') }}" class="flex-1 text-center px-4 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition font-medium">❌ Cancel</a>
+        <button type="submit" class="flex-1 btn-modern btn-success-modern">✅ Save Prescription</button>
+      </div>
+    </form>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

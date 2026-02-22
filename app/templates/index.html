@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block page_class %}page-home{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+  <div class="space-y-6">
+    <h1 class="text-5xl font-extrabold leading-tight" style="font-family: 'Poppins', sans-serif;">Telemedicine, reimagined.<br><span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Book, consult & find medicines online.</span></h1>
+    <p class="text-lg text-slate-700 max-w-xl" style="font-family: 'Inter', sans-serif;">Access quality healthcare from the comfort of your home. Connect with certified doctors, get instant prescriptions, order medicines online, and access our comprehensive health library — all in one secure platform.</p>
+
+    <div class="mt-4 p-4 bg-white/70 backdrop-blur-sm rounded-xl border border-indigo-100">
+      <div class="font-semibold text-indigo-700 mb-2">🩺 Why Choose Telemed Online Seva?</div>
+      <ul class="text-sm text-slate-600 space-y-1">
+        <li>✅ Consult certified doctors via secure video calls</li>
+        <li>✅ Get digital prescriptions instantly</li>
+        <li>✅ Order medicines online with home delivery</li>
+        <li>✅ Access health library with 100+ disease guides</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="glass-card">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h3 class="text-lg font-semibold">How It Works</h3>
+        <div class="muted">Simple steps to get healthcare online</div>
+      </div>
+      <div class="text-slate-500 text-sm">🏥 <span class="font-semibold text-emerald-600 ml-2">24/7 Available</span></div>
+    </div>
+
+    <ul class="space-y-3">
+      <li class="flex items-start gap-3">
+        <div class="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-semibold">1</div>
+        <div>
+          <div class="font-medium">📋 Register & Book Appointment</div>
+          <div class="muted">Create your account and schedule a consultation with our certified doctors specializing in 15+ medical fields.</div>
+        </div>
+      </li>
+      <li class="flex items-start gap-3">
+        <div class="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-semibold">2</div>
+        <div>
+          <div class="font-medium">🎥 Video Consultation</div>
+          <div class="muted">Connect with your doctor via secure HD video call. Discuss symptoms, get diagnosed, and receive expert medical advice.</div>
+        </div>
+      </li>
+      <li class="flex items-start gap-3">
+        <div class="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-semibold">3</div>
+        <div>
+          <div class="font-medium">📄 Digital Prescription</div>
+          <div class="muted">Receive instant digital prescriptions that you can view, download, and share. All records stored securely in your account.</div>
+        </div>
+      </li>
+      <li class="flex items-start gap-3">
+        <div class="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-semibold">4</div>
+        <div>
+          <div class="font-medium">💊 Order Medicines Online</div>
+          <div class="muted">Search from 1000+ medicines, compare prices from verified pharmacies, and get medicines delivered to your doorstep.</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+{% endblock %}

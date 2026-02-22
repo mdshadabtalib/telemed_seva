@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-2xl mx-auto">
+  <div class="card">
+    <h2 class="text-2xl font-bold mb-4">Order Medicine</h2>
+    
+    <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+      <h3 class="font-semibold text-lg mb-2">{{ medicine.name }}</h3>
+      <p class="text-gray-600 mb-2">{{ medicine.description }}</p>
+      <div class="grid grid-cols-2 gap-4 text-sm">
+        <div>
+          <span class="font-medium">Price:</span> ₹{{ "%.2f"|format(medicine.price) }}
+        </div>
+        <div>
+          <span class="font-medium">Category:</span> {{ medicine.category or 'N/A' }}
+        </div>
+        <div>
+          <span class="font-medium">Available Stock:</span> {{ medicine.stock }} units
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+      <h4 class="font-semibold mb-2">Pharmacy Information</h4>
+      <p class="text-sm"><strong>Shop:</strong> {{ pharmacy.shop_name }}</p>
+      <p class="text-sm"><strong>Address:</strong> {{ pharmacy.shop_address }}</p>
+      <p class="text-sm"><strong>Phone:</strong> {{ pharmacy.shop_phone }}</p>
+    </div>
+
+    <form method="post" class="space-y-4">
+      <div>
+        <label class="block font-medium mb-1">Quantity</label>
+        <input type="number" name="quantity" min="1" max="{{ medicine.stock }}" value="1" required 
+               class="w-full p-3 border rounded-lg">
+      </div>
+
+      <div>
+        <label class="block font-medium mb-1">Delivery Address</label>
+        <textarea name="delivery_address" rows="3" required 
+                  class="w-full p-3 border rounded-lg" 
+                  placeholder="Enter your complete delivery address"></textarea>
+      </div>
+
+      <div>
+        <label class="block font-medium mb-1">Contact Phone</label>
+        <input type="tel" name="phone" required 
+               class="w-full p-3 border rounded-lg" 
+               placeholder="Your phone number">
+      </div>
+
+      <div class="flex gap-3">
+        <a href="{{ url_for('search_medicine') }}" class="flex-1 text-center px-4 py-2 border rounded-lg hover:bg-gray-50">Cancel</a>
+        <button type="submit" class="flex-1 btn-primary">Place Order</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
