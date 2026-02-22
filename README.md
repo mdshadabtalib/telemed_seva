@@ -45,11 +45,20 @@ telemed_seva/app/
 ## ⚙️ How to Run the Project (Windows)
 
 ### Step 1: Clone the Repository
+
 git clone https://github.com/your-username/telemed_seva.git
-cd telemed_seva/app
+
+cd telemed_seva/app\
+
 python -m venv venv
+
 .\venv\Scripts\activate
+
 pip install -r requirements.txt
+
 py .\app.py
+
 Open your browser and go to:
-http://127.0.0.1:5000
+
+http://127.0.0.1:5000\
+
