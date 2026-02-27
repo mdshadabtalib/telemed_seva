@@ -29,17 +29,29 @@ TeleMed Seva is a Flask-based telemedicine web application that allows patients 
 ## 📁 Project Structure
 telemed_seva/app/
 │
+
 ├── app.py
+
 ├── requirements.txt
+
 ├── static/
+
 │ ├── css/
+
 │ ├── js/
+
 │ └── images/
+
 ├── templates/
+
 │ ├── index.html
+
 │ ├── login.html
+
 │ ├── register.html
+
 │ └── dashboard.html
+
 └── README.md
 
 ## ⚙️ How to Run the Project (Windows)
