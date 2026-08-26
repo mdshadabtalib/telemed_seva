@@ -5,7 +5,7 @@ def test_startup():
     """Test that the app can be created and configured."""
     app = create_app()
     
-    print("✓ App created successfully")
+    print("[OK] App created successfully")
     print(f"  Debug mode: {app.debug}")
     print(f"  Testing mode: {app.testing}")
     print(f"  Secret key configured: {'Yes' if app.secret_key else 'No'}")
@@ -26,7 +26,7 @@ def test_startup():
         response = client.get('/health')
         print(f"  Health endpoint status: {response.status_code}")
     
-    print("\n✓ All startup checks passed!")
+    print("\n[OK] All startup checks passed!")
     return True
 
 if __name__ == '__main__':
