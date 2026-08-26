@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container"><div style="max-width:700px; margin:0 auto;">
+  <h1 class="mb-6">{{ medicine.name }}</h1>
+  <div class="card"><div class="card-body">
+    <div style="display:flex; gap:var(--space-6);">
+      <div style="width:200px; flex-shrink:0;">{% if medicine.image_url %}<img src="{{ medicine.image_url }}" style="border-radius:var(--radius-lg); width:100%;">{% else %}<div style="width:200px; height:200px; background:var(--primary-50); border-radius:var(--radius-lg); display:flex; align-items:center; justify-content:center;"><i class="fas fa-capsules" style="font-size:3rem; color:var(--primary);"></i></div>{% endif %}</div>
+      <div style="flex:1;">
+        {% if medicine.requires_prescription %}<span class="badge badge-warning mb-4"><i class="fas fa-prescription"></i> Prescription Required</span>{% endif %}
+        <h2>{{ medicine.name }}</h2>
+        <p class="text-muted">{{ medicine.generic_name or '' }}</p>
+        <div class="text-sm text-muted mb-4">{{ medicine.manufacturer or '' }} · {{ medicine.dosage_form.value|title }} · {{ medicine.strength }} · {{ medicine.pack_size }}</div>
+        <div class="mb-4">{% if medicine.discount_percent > 0 %}<span style="text-decoration:line-through; color:var(--gray-400); margin-right:var(--space-2);">{{ currency }}{{ medicine.price }}</span><span class="badge badge-success">{{ medicine.discount_percent|int }}% OFF</span><br>{% endif %}<span style="font-size:1.75rem; font-weight:800; color:var(--primary-dark);">{{ currency }}{{ medicine.selling_price }}</span></div>
+        {% if medicine.in_stock %}
+        <form method="POST" action="{{ url_for('pharmacy.add_to_cart') }}" style="display:flex; gap:var(--space-3); align-items:center;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="medicine_id" value="{{ medicine.id }}">
+          <input type="number" name="quantity" value="1" min="1" max="{{ medicine.stock_quantity }}" class="form-control" style="width:80px;">
+          <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-cart-plus"></i> Add to Cart</button>
+        </form>
+        {% else %}<span class="badge badge-danger" style="font-size:0.9rem; padding:var(--space-2) var(--space-4);">Out of Stock</span>{% endif %}
+      </div>
+    </div>
+    {% if medicine.description %}<div style="margin-top:var(--space-6); border-top:1px solid var(--gray-200); padding-top:var(--space-6);"><h3>Description</h3><p>{{ medicine.description }}</p></div>{% endif %}
+  </div></div>
+</div></div>
+{% endblock %}

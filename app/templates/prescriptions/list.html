@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <h1 class="mb-6">My Prescriptions</h1>
+  {% if prescriptions.items %}
+  <div class="table-responsive"><table><thead><tr><th>Prescription ID</th><th>Date</th><th>Medicines</th><th>Action</th></tr></thead><tbody>
+  {% for rx in prescriptions.items %}
+  <tr><td><strong>{{ rx.prescription_uid }}</strong></td><td>{{ rx.created_at.strftime('%d %b %Y') }}</td><td>{{ rx.items|length }} items</td>
+  <td><a href="{{ url_for('prescriptions.view', prescription_id=rx.id) }}" class="btn btn-outline btn-sm">View</a></td></tr>
+  {% endfor %}
+  </tbody></table></div>
+  {% else %}
+  <div class="empty-state"><div class="empty-icon"><i class="fas fa-prescription"></i></div><h3>No prescriptions yet</h3></div>
+  {% endif %}
+</div>
+{% endblock %}

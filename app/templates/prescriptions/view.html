@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <div class="prescription-container">
+    <div class="prescription-header">
+      <div><h2 style="color:var(--primary); margin-bottom:var(--space-1);"><i class="fas fa-heartbeat"></i> {{ platform_name }}</h2><p class="text-sm text-muted mb-0">Digital Prescription</p></div>
+      <div style="text-align:right;"><strong>{{ prescription.prescription_uid }}</strong><br><span class="text-sm text-muted">{{ prescription.created_at.strftime('%d %B %Y') }}</span></div>
+    </div>
+    <div class="grid grid-2 mb-6">
+      <div><h4 class="text-sm text-muted">DOCTOR</h4><strong>Dr. {{ prescription.doctor_profile.full_name }}</strong><br><span class="text-sm">{{ prescription.doctor_profile.qualifications or '' }}</span><br><span class="text-sm text-muted">Reg. No: {{ prescription.doctor_profile.registration_number or 'N/A' }}</span></div>
+      <div><h4 class="text-sm text-muted">PATIENT</h4><strong>{{ prescription.patient.display_name }}</strong></div>
+    </div>
+    <div class="mb-6"><h4 class="text-sm text-muted">DIAGNOSIS</h4><p>{{ prescription.diagnosis or '—' }}</p></div>
+    <div class="mb-6">
+      <h4 class="text-sm text-muted">PRESCRIBED MEDICINES</h4>
+      <div class="table-responsive" style="margin-top:var(--space-3);"><table><thead><tr><th>#</th><th>Medicine</th><th>Strength</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>Qty</th><th>Instructions</th></tr></thead><tbody>
+      {% for item in prescription.items %}
+      <tr><td>{{ loop.index }}</td><td><strong>{{ item.medicine_name }}</strong></td><td>{{ item.strength or '—' }}</td><td>{{ item.dosage or '—' }}</td><td>{{ item.frequency or '—' }}</td><td>{{ item.duration or '—' }}</td><td>{{ item.quantity or '—' }}</td><td>{{ item.instructions or '—' }}</td></tr>
+      {% endfor %}
+      </tbody></table></div>
+    </div>
+    {% if prescription.advice %}<div class="mb-6"><h4 class="text-sm text-muted">ADVICE</h4><p>{{ prescription.advice }}</p></div>{% endif %}
+    <div class="no-print" style="margin-top:var(--space-8); display:flex; gap:var(--space-3);">
+      <button onclick="window.print()" class="btn btn-outline"><i class="fas fa-print"></i> Print</button>
+      <a href="{{ url_for('prescriptions.my_prescriptions') }}" class="btn btn-outline">← Back to Prescriptions</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

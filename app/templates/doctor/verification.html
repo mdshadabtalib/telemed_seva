@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <h1 class="mb-6">Verification</h1>
+  {% if verification and verification.status.value == 'approved' %}
+  <div class="alert alert-success"><i class="fas fa-check-circle"></i> <strong>Verified!</strong> Your credentials have been verified. You can now accept consultations.</div>
+  {% elif verification and verification.status.value == 'pending' %}
+  <div class="alert alert-info"><i class="fas fa-clock"></i> Your verification is <strong>pending review</strong>. An admin will verify your documents shortly.</div>
+  {% elif verification and verification.status.value == 'rejected' %}
+  <div class="alert alert-danger"><i class="fas fa-times-circle"></i> <strong>Rejected:</strong> {{ verification.rejection_reason or 'Please re-submit your documents.' }}</div>
+  {% else %}
+  <div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> Please submit your credentials for verification. You cannot consult patients until verified.</div>
+  {% endif %}
+
+  {% if not verification or verification.status.value in ('rejected', 'pending') %}
+  {% if not verification or verification.status.value == 'rejected' %}
+  <div class="card"><div class="card-body">
+    <h3 class="mb-4">Submit Verification Documents</h3>
+    <form method="POST" enctype="multipart/form-data"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-group"><label class="form-label">Medical License / Registration Certificate *</label><input type="file" name="medical_license" class="form-control" required accept=".pdf,.jpg,.jpeg,.png"><p class="form-text">Upload your medical council registration certificate.</p></div>
+      <div class="form-group"><label class="form-label">Government ID Proof</label><input type="file" name="id_proof" class="form-control" accept=".pdf,.jpg,.jpeg,.png"></div>
+      <div class="form-group"><label class="form-label">Degree Certificate</label><input type="file" name="degree_certificate" class="form-control" accept=".pdf,.jpg,.jpeg,.png"></div>
+      <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-paper-plane"></i> Submit for Verification</button>
+    </form>
+  </div></div>
+  {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

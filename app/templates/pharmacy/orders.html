@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <h1 class="mb-6">My Orders</h1>
+  {% if orders.items %}
+  <div class="table-responsive"><table><thead><tr><th>Order</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th><th>Action</th></tr></thead><tbody>
+  {% for order in orders.items %}
+  <tr><td><strong>{{ order.order_number }}</strong></td><td>{{ order.created_at.strftime('%d %b %Y') }}</td><td>{{ order.items|length }} items</td><td>{{ currency }}{{ order.total }}</td>
+  <td><span class="badge badge-{{ 'success' if order.status.value == 'delivered' else 'warning' if order.status.value in ('pending','processing','prescription_verification') else 'info' if order.status.value == 'shipped' else 'danger' }}">{{ order.status.value|replace('_',' ')|title }}</span></td>
+  <td><a href="{{ url_for('pharmacy.order_detail', order_id=order.id) }}" class="btn btn-outline btn-sm">View</a></td></tr>
+  {% endfor %}
+  </tbody></table></div>
+  {% else %}<div class="empty-state"><div class="empty-icon"><i class="fas fa-box"></i></div><h3>No orders yet</h3><a href="{{ url_for('pharmacy.catalog') }}" class="btn btn-primary">Browse Pharmacy</a></div>{% endif %}
+</div>
+{% endblock %}

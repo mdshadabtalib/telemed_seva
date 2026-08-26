@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}{{ platform_name }} — Online Doctor Consultation & Pharmacy{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-content">
+      <h1>Your Health, Our Priority — Consult Doctors Online</h1>
+      <p class="hero-subtitle">Connect with verified doctors from the comfort of your home. Get digital prescriptions, order medicines, and manage your health records — all on one secure platform.</p>
+      <div class="hero-actions">
+        <a href="{{ url_for('appointments.search_doctors') }}" class="btn btn-primary btn-lg">
+          <i class="fas fa-search"></i> Find a Doctor
+        </a>
+        <a href="{{ url_for('pharmacy.catalog') }}" class="btn btn-outline btn-lg" style="border-color: rgba(255,255,255,0.3); color: white;">
+          <i class="fas fa-capsules"></i> Order Medicines
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works -->
+<section class="section" style="background: white;">
+  <div class="container">
+    <div class="section-header">
+      <h2>How TeleMed Seva Works</h2>
+      <p>Get medical consultation in 3 simple steps</p>
+    </div>
+    <div class="grid grid-3">
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-user-doctor"></i></div>
+        <h4>Find a Doctor</h4>
+        <p>Search by specialty, check ratings, read reviews, and choose the right doctor for you.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-calendar-check"></i></div>
+        <h4>Book Appointment</h4>
+        <p>Pick a convenient time slot, pay securely, and get instant confirmation.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-video"></i></div>
+        <h4>Consult Online</h4>
+        <p>Join the consultation room, chat with your doctor, share reports, and receive a digital prescription.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Specialties -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Consult Top Specialists</h2>
+      <p>Expert doctors across 15+ medical specialties</p>
+    </div>
+    <div class="grid grid-4">
+      {% set specialty_icons = {
+        'General Medicine': 'fa-stethoscope',
+        'Cardiology': 'fa-heartbeat',
+        'Dermatology': 'fa-hand-holding-medical',
+        'Orthopedics': 'fa-bone',
+        'Pediatrics': 'fa-baby',
+        'Gynecology': 'fa-female',
+        'Neurology': 'fa-brain',
+        'Psychiatry': 'fa-head-side-virus'
+      } %}
+      {% for name, icon in specialty_icons.items() %}
+      <a href="{{ url_for('appointments.search_doctors', specialty=loop.index) }}" class="feature-card" style="text-decoration:none;">
+        <div class="feature-icon"><i class="fas {{ icon }}"></i></div>
+        <h4>{{ name }}</h4>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Pharmacy -->
+<section class="section" style="background: white;">
+  <div class="container">
+    <div class="section-header">
+      <h2>Online Pharmacy</h2>
+      <p>Order medicines online with prescription verification and doorstep delivery</p>
+    </div>
+    <div class="grid grid-3">
+      <div class="feature-card">
+        <div class="feature-icon" style="background: linear-gradient(135deg, #d1fae5, #a7f3d0); color: #059669;"><i class="fas fa-pills"></i></div>
+        <h4>Wide Range</h4>
+        <p>Thousands of medicines from trusted manufacturers at the best prices.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background: linear-gradient(135deg, #fef3c7, #fde68a); color: #d97706;"><i class="fas fa-file-prescription"></i></div>
+        <h4>Prescription Verified</h4>
+        <p>Prescription-required medicines are verified by licensed pharmacists before dispatch.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background: linear-gradient(135deg, #dbeafe, #93c5fd); color: #2563eb;"><i class="fas fa-truck"></i></div>
+        <h4>Fast Delivery</h4>
+        <p>Track your order in real-time with free delivery on orders above ₹500.</p>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top: var(--space-8);">
+      <a href="{{ url_for('pharmacy.catalog') }}" class="btn btn-primary btn-lg"><i class="fas fa-capsules"></i> Browse Medicines</a>
+    </div>
+  </div>
+</section>
+
+<!-- Trust & Safety -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Your Trust & Safety</h2>
+      <p>We take your health data privacy seriously</p>
+    </div>
+    <div class="grid grid-4">
+      <div style="text-align:center;">
+        <div style="font-size:2rem; color:var(--primary); margin-bottom:var(--space-3);"><i class="fas fa-user-shield"></i></div>
+        <h4>Verified Doctors</h4>
+        <p class="text-sm">Every doctor is verified by our admin team before they can consult.</p>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:2rem; color:var(--success); margin-bottom:var(--space-3);"><i class="fas fa-lock"></i></div>
+        <h4>Secure & Private</h4>
+        <p class="text-sm">Your medical data is encrypted and never shared without your consent.</p>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:2rem; color:var(--warning); margin-bottom:var(--space-3);"><i class="fas fa-file-medical"></i></div>
+        <h4>Digital Records</h4>
+        <p class="text-sm">Access your prescriptions and medical records anytime, anywhere.</p>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:2rem; color:var(--info); margin-bottom:var(--space-3);"><i class="fas fa-headset"></i></div>
+        <h4>24/7 Support</h4>
+        <p class="text-sm">Our support team is always ready to help with any issues.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section" style="background: linear-gradient(135deg, var(--primary-900), var(--primary-dark)); color: white; text-align: center;">
+  <div class="container">
+    <h2 style="color: white; font-size: 2rem;">Ready to Get Started?</h2>
+    <p style="color: rgba(255,255,255,0.8); max-width: 500px; margin: 0 auto var(--space-6);">Join thousands of patients who trust TeleMed Seva for their healthcare needs.</p>
+    <div style="display:flex; gap:var(--space-4); justify-content:center; flex-wrap:wrap;">
+      <a href="{{ url_for('auth.register') }}" class="btn btn-lg" style="background:white; color:var(--primary-dark); font-weight:700;">
+        <i class="fas fa-user-plus"></i> Register as Patient
+      </a>
+      <a href="{{ url_for('auth.register') }}" class="btn btn-outline btn-lg" style="border-color:rgba(255,255,255,0.4); color:white;">
+        <i class="fas fa-user-md"></i> Register as Doctor
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

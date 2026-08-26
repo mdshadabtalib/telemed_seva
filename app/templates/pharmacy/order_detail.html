@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container"><div style="max-width:700px; margin:0 auto;">
+  <h1 class="mb-6">Order {{ order.order_number }}</h1>
+  <div class="card mb-6"><div class="card-body">
+    <div class="flex-between mb-6"><span class="badge badge-{{ 'success' if order.status.value == 'delivered' else 'warning' if order.status.value in ('pending','processing') else 'info' }}" style="font-size:0.85rem; padding:var(--space-2) var(--space-4);">{{ order.status.value|replace('_',' ')|title }}</span><span class="text-sm text-muted">{{ order.created_at.strftime('%d %b %Y, %I:%M %p') }}</span></div>
+    <h3 class="mb-4">Items</h3>
+    {% for item in order.items %}
+    <div class="flex-between" style="padding:var(--space-3) 0; {% if not loop.last %}border-bottom:1px solid var(--gray-100);{% endif %}">
+      <div><strong>{{ item.medicine_name }}</strong><div class="text-sm text-muted">{{ currency }}{{ item.unit_price }} × {{ item.quantity }}</div></div>
+      <strong>{{ currency }}{{ item.total_price }}</strong>
+    </div>
+    {% endfor %}
+    <div style="border-top:2px solid var(--gray-200); margin-top:var(--space-4); padding-top:var(--space-4);">
+      <div class="flex-between text-sm mb-4"><span>Subtotal</span><span>{{ currency }}{{ order.subtotal }}</span></div>
+      <div class="flex-between text-sm mb-4"><span>Delivery</span><span>{{ currency }}{{ order.delivery_charge }}</span></div>
+      <div class="flex-between text-sm mb-4"><span>Tax</span><span>{{ currency }}{{ order.tax }}</span></div>
+      <div class="flex-between"><strong>Total</strong><strong style="color:var(--primary-dark); font-size:1.2rem;">{{ currency }}{{ order.total }}</strong></div>
+    </div>
+  </div></div>
+  {% if order.status.value == 'payment_pending' %}
+  <a href="{{ url_for('payments.pay_order', order_id=order.id) }}" class="btn btn-primary btn-lg btn-block"><i class="fas fa-credit-card"></i> Pay {{ currency }}{{ order.total }}</a>
+  {% endif %}
+</div></div>
+{% endblock %}

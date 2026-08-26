@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container"><div style="max-width:700px; margin:0 auto;">
+  <h1 class="mb-6">Appointment #{{ appointment.id }}</h1>
+  <div class="card"><div class="card-body">
+    <div class="flex-between mb-6"><span class="badge badge-{{ 'success' if appointment.status.value == 'confirmed' else 'warning' if appointment.status.value == 'pending' else 'danger' if appointment.status.value == 'cancelled' else 'info' }}" style="font-size:0.85rem; padding:var(--space-2) var(--space-4);">{{ appointment.status.value|upper }}</span><span class="text-sm text-muted">Created {{ appointment.created_at.strftime('%d %b %Y') }}</span></div>
+    <div class="grid grid-2 mb-6">
+      <div><h4 class="text-muted text-sm">DATE & TIME</h4><strong>{{ appointment.appointment_date.strftime('%d %B %Y') }}</strong><br>{{ appointment.start_time.strftime('%I:%M %p') }} — {{ appointment.end_time.strftime('%I:%M %p') }}</div>
+      <div><h4 class="text-muted text-sm">TYPE</h4><span class="badge badge-info">{{ appointment.appointment_type.value|title }} Consultation</span></div>
+      <div><h4 class="text-muted text-sm">DOCTOR</h4><strong>Dr. {{ appointment.doctor.full_name }}</strong><br><span class="text-sm text-muted">{{ appointment.doctor.specialty.name if appointment.doctor.specialty else '' }}</span></div>
+      <div><h4 class="text-muted text-sm">FEE</h4><strong style="font-size:1.25rem; color:var(--primary-dark);">{{ currency }}{{ appointment.consultation_fee }}</strong></div>
+    </div>
+    {% if appointment.patient_notes %}<div class="mb-6"><h4 class="text-muted text-sm">PATIENT NOTES</h4><p>{{ appointment.patient_notes }}</p></div>{% endif %}
+    <div style="display:flex; gap:var(--space-3); flex-wrap:wrap;">
+      {% if appointment.consultation and appointment.status.value in ('confirmed', 'pending') %}
+      <a href="{{ url_for('consultation.room', consultation_id=appointment.consultation.id) }}" class="btn btn-primary"><i class="fas fa-video"></i> Join Consultation</a>
+      {% endif %}
+      {% if appointment.status.value in ('confirmed', 'pending') %}
+      <button onclick="openModal('cancel-modal')" class="btn btn-danger"><i class="fas fa-times"></i> Cancel</button>
+      {% endif %}
+      {% if appointment.consultation and appointment.consultation.prescription %}
+      <a href="{{ url_for('prescriptions.view', prescription_id=appointment.consultation.prescription.id) }}" class="btn btn-outline"><i class="fas fa-prescription"></i> View Prescription</a>
+      {% endif %}
+    </div>
+  </div></div>
+</div>
+<!-- Cancel Modal -->
+<div class="modal-overlay" id="cancel-modal"><div class="modal"><div class="modal-header"><h3>Cancel Appointment</h3><button class="modal-close" onclick="closeModal('cancel-modal')">&times;</button></div>
+<form method="POST" action="{{ url_for('appointments.cancel', appointment_id=appointment.id) }}"><div class="modal-body"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><div class="form-group"><label class="form-label">Reason for cancellation</label><textarea name="reason" class="form-control" required></textarea></div></div><div class="modal-footer"><button type="button" class="btn btn-outline" onclick="closeModal('cancel-modal')">Keep Appointment</button><button type="submit" class="btn btn-danger">Cancel Appointment</button></div></form></div></div>
+{% endblock %}

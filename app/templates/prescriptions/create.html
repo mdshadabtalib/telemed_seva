@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container"><div style="max-width:800px; margin:0 auto;">
+  <h1 class="mb-6">Create Prescription</h1>
+  <div class="card mb-4"><div class="card-body">
+    <div class="flex-between"><div><strong>Patient:</strong> {{ appointment.patient.display_name }}</div><div><strong>Date:</strong> {{ appointment.appointment_date.strftime('%d %b %Y') }}</div></div>
+    {% if consultation.diagnosis %}<div style="margin-top:var(--space-3);"><strong>Diagnosis:</strong> {{ consultation.diagnosis }}</div>{% endif %}
+  </div></div>
+  <div class="card"><div class="card-body">
+    <form method="POST"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-group"><label class="form-label">Diagnosis</label><textarea name="diagnosis" class="form-control" rows="2" required>{{ consultation.diagnosis or '' }}</textarea></div>
+      <h3 class="mb-4">Medicines</h3>
+      <div class="table-responsive mb-4"><table><thead><tr><th>Medicine</th><th>Strength</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>Qty</th><th>Instructions</th><th></th></tr></thead>
+      <tbody id="medicine-rows">
+        <tr>
+          <td><input name="medicine_name[]" class="form-control" required placeholder="e.g. Paracetamol" style="min-width:140px;"></td>
+          <td><input name="strength[]" class="form-control" placeholder="500mg" style="min-width:80px;"></td>
+          <td><input name="dosage[]" class="form-control" placeholder="1 tab" style="min-width:80px;"></td>
+          <td><input name="frequency[]" class="form-control" placeholder="3x/day" style="min-width:80px;"></td>
+          <td><input name="duration[]" class="form-control" placeholder="5 days" style="min-width:80px;"></td>
+          <td><input name="quantity[]" type="number" class="form-control" min="1" placeholder="15" style="min-width:60px;"></td>
+          <td><input name="instructions[]" class="form-control" placeholder="After food" style="min-width:100px;"></td>
+          <td><button type="button" onclick="removeMedicineRow(this)" class="btn btn-outline btn-sm text-danger"><i class="fas fa-trash"></i></button></td>
+        </tr>
+      </tbody></table></div>
+      <button type="button" onclick="addMedicineRow()" class="btn btn-outline btn-sm mb-6"><i class="fas fa-plus"></i> Add Medicine</button>
+      <div class="form-group"><label class="form-label">Advice / Instructions</label><textarea name="advice" class="form-control" rows="3" placeholder="Rest, diet recommendations, follow-up..."></textarea></div>
+      <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-file-prescription"></i> Create Prescription</button>
+    </form>
+  </div></div>
+</div></div>
+{% endblock %}

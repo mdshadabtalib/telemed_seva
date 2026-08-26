@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Log In — {{ platform_name }}{% endblock %}
+{% block footer %}{% endblock %}
+{% block content %}
+<div style="min-height:80vh; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg, var(--gray-50), var(--primary-50));">
+  <div style="width:100%; max-width:440px; padding: var(--space-6);">
+    <div style="text-align:center; margin-bottom:var(--space-8);">
+      <a href="{{ url_for('auth.login') }}" class="navbar-brand" style="justify-content:center; font-size:1.75rem;">
+        <span class="brand-icon" style="width:44px; height:44px; font-size:1.25rem;"><i class="fas fa-heartbeat"></i></span>
+        {{ platform_name }}
+      </a>
+      <p style="margin-top:var(--space-2); color:var(--gray-500);">Welcome back! Log in to continue.</p>
+    </div>
+    <div class="card">
+      <div class="card-body" style="padding:var(--space-8);">
+        <form method="POST">
+          {{ form.hidden_tag() }}
+          <div class="form-group">
+            <label class="form-label" for="email">Email Address</label>
+            {{ form.email(class="form-control", placeholder="you@example.com", id="email") }}
+            {% for error in form.email.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="password">Password</label>
+            {{ form.password(class="form-control", placeholder="Enter your password", id="password") }}
+            {% for error in form.password.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+          </div>
+          <div class="form-group">
+            <div class="form-check">
+              {{ form.remember_me(id="remember") }}
+              <label for="remember" style="font-size:0.85rem; color:var(--gray-600);">Remember me</label>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block btn-lg">Log In</button>
+        </form>
+      </div>
+    </div>
+    <p style="text-align:center; margin-top:var(--space-6); font-size:0.9rem; color:var(--gray-500);">
+      Don't have an account? <a href="{{ url_for('auth.register') }}">Create one</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

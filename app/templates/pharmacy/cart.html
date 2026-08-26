@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container"><div style="max-width:800px; margin:0 auto;">
+  <h1 class="mb-6">Shopping Cart</h1>
+  {% if cart and cart.items %}
+  <div class="card mb-6"><div class="card-body">
+    {% for item in cart.items %}
+    <div style="display:flex; align-items:center; gap:var(--space-4); padding:var(--space-4) 0; {% if not loop.last %}border-bottom:1px solid var(--gray-100);{% endif %}">
+      <div style="width:60px; height:60px; background:var(--primary-50); border-radius:var(--radius); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        {% if item.medicine.image_url %}<img src="{{ item.medicine.image_url }}" style="width:100%; height:100%; object-fit:cover; border-radius:var(--radius);">{% else %}<i class="fas fa-capsules text-primary"></i>{% endif %}
+      </div>
+      <div style="flex:1;">
+        <strong>{{ item.medicine.name }}</strong>
+        <div class="text-sm text-muted">{{ item.medicine.strength }} · {{ currency }}{{ item.medicine.selling_price }} each</div>
+      </div>
+      <form method="POST" action="{{ url_for('pharmacy.update_cart') }}" id="cart-form-{{ item.id }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="item_id" value="{{ item.id }}">
+        <div style="display:flex; align-items:center; gap:var(--space-2);">
+          <button type="button" onclick="updateCartQuantity({{ item.id }}, -1)" class="btn btn-outline btn-sm btn-icon">−</button>
+          <input type="number" name="quantity" id="qty-{{ item.id }}" value="{{ item.quantity }}" min="1" class="form-control" style="width:60px; text-align:center;">
+          <button type="button" onclick="updateCartQuantity({{ item.id }}, 1)" class="btn btn-outline btn-sm btn-icon">+</button>
+        </div>
+      </form>
+      <strong style="min-width:80px; text-align:right;">{{ currency }}{{ item.line_total }}</strong>
+      <form method="POST" action="{{ url_for('pharmacy.remove_from_cart', item_id=item.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="btn btn-outline btn-sm text-danger btn-icon"><i class="fas fa-trash"></i></button></form>
+    </div>
+    {% endfor %}
+  </div></div>
+  <div class="card"><div class="card-body">
+    <div class="flex-between mb-4"><span>Subtotal</span><strong>{{ currency }}{{ cart.subtotal }}</strong></div>
+    <a href="{{ url_for('pharmacy.checkout') }}" class="btn btn-primary btn-lg btn-block"><i class="fas fa-lock"></i> Proceed to Checkout</a>
+    <a href="{{ url_for('pharmacy.catalog') }}" class="btn btn-outline btn-block mt-4">← Continue Shopping</a>
+  </div></div>
+  {% else %}
+  <div class="empty-state"><div class="empty-icon"><i class="fas fa-shopping-cart"></i></div><h3>Your cart is empty</h3><p>Browse our pharmacy catalog and add medicines to your cart.</p><a href="{{ url_for('pharmacy.catalog') }}" class="btn btn-primary"><i class="fas fa-capsules"></i> Browse Pharmacy</a></div>
+  {% endif %}
+</div></div>
+{% endblock %}

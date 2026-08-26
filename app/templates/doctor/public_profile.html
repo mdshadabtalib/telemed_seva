@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <div class="card" style="max-width:800px; margin:0 auto;">
+    <div class="card-body" style="padding:var(--space-8);">
+      <div style="display:flex; gap:var(--space-6); align-items:flex-start;">
+        <div class="avatar-xl">{% if doctor.avatar %}<img src="/uploads/avatars/{{ doctor.avatar }}">{% else %}{{ doctor.first_name[0] }}{% endif %}</div>
+        <div style="flex:1;">
+          <h1 style="margin-bottom:var(--space-1);">Dr. {{ doctor.full_name }}</h1>
+          {% if doctor.specialty %}<p class="text-primary font-bold mb-0">{{ doctor.specialty.name }}</p>{% endif %}
+          <p class="text-sm text-muted">{{ doctor.qualifications or '' }}</p>
+          <div class="flex gap-4 mt-4" style="flex-wrap:wrap;">
+            <span><i class="fas fa-briefcase text-muted"></i> {{ doctor.experience_years }} yrs experience</span>
+            <span><i class="fas fa-star text-warning"></i> {{ doctor.average_rating }} ({{ doctor.review_count }} reviews)</span>
+            <span><i class="fas fa-language text-muted"></i> {{ doctor.languages or 'English' }}</span>
+          </div>
+          <div style="margin-top:var(--space-6); display:flex; align-items:center; gap:var(--space-4);">
+            <span style="font-size:1.5rem; font-weight:800; color:var(--primary-dark);">{{ currency }}{{ doctor.consultation_fee }}</span>
+            <span class="text-sm text-muted">per consultation ({{ doctor.consultation_duration }} min)</span>
+          </div>
+          {% if doctor.is_verified and doctor.is_available %}
+          <a href="{{ url_for('appointments.book', doctor_id=doctor.id) }}" class="btn btn-primary btn-lg mt-6"><i class="fas fa-calendar-plus"></i> Book Appointment</a>
+          {% endif %}
+        </div>
+      </div>
+      {% if doctor.bio %}<div style="margin-top:var(--space-8); border-top:1px solid var(--gray-200); padding-top:var(--space-6);"><h3>About</h3><p>{{ doctor.bio }}</p></div>{% endif %}
+      {% if reviews %}
+      <div style="margin-top:var(--space-6); border-top:1px solid var(--gray-200); padding-top:var(--space-6);">
+        <h3>Patient Reviews</h3>
+        {% for review in reviews %}
+        <div style="padding:var(--space-4) 0; {% if not loop.last %}border-bottom:1px solid var(--gray-100);{% endif %}">
+          <div class="flex-between"><div class="stars">{% for i in range(5) %}<i class="fas fa-star {{ '' if i < review.rating else 'empty' }}"></i>{% endfor %}</div><span class="text-sm text-muted">{{ review.created_at.strftime('%d %b %Y') }}</span></div>
+          {% if review.comment %}<p style="margin-top:var(--space-2);">{{ review.comment }}</p>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

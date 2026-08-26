@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <div class="flex-between mb-6"><h1>Pharmacy</h1>
+    <form method="GET" style="display:flex; gap:var(--space-2);"><input type="text" name="q" class="form-control" placeholder="Search medicines..." value="{{ filters.get('q','') }}" style="min-width:200px;"><button class="btn btn-primary"><i class="fas fa-search"></i></button></form>
+  </div>
+  <!-- Categories -->
+  <div style="display:flex; gap:var(--space-2); flex-wrap:wrap; margin-bottom:var(--space-6);">
+    <a href="{{ url_for('pharmacy.catalog') }}" class="btn {{ 'btn-primary' if not filters.get('category') else 'btn-outline' }} btn-sm">All</a>
+    {% for cat in categories %}<a href="?category={{ cat.slug }}" class="btn {{ 'btn-primary' if filters.get('category') == cat.slug else 'btn-outline' }} btn-sm">{{ cat.name }}</a>{% endfor %}
+  </div>
+  {% if medicines.items %}
+  <div class="grid grid-4">
+    {% for med in medicines.items %}
+    <div class="card">
+      {% if med.image_url %}<img src="{{ med.image_url }}" class="card-img-top" alt="{{ med.name }}">{% else %}<div class="card-img-top" style="background:linear-gradient(135deg, var(--primary-50), var(--primary-100)); display:flex; align-items:center; justify-content:center;"><i class="fas fa-capsules" style="font-size:2.5rem; color:var(--primary);"></i></div>{% endif %}
+      <div class="card-body">
+        {% if med.requires_prescription %}<span class="badge badge-warning mb-4"><i class="fas fa-prescription"></i> Rx Required</span>{% endif %}
+        <h4 class="truncate" style="margin-bottom:var(--space-1);">{{ med.name }}</h4>
+        <p class="text-sm text-muted mb-0">{{ med.generic_name or '' }}</p>
+        <p class="text-sm text-muted">{{ med.strength }} · {{ med.pack_size }}</p>
+        <div class="flex-between mt-4">
+          <div>
+            {% if med.discount_percent > 0 %}<span class="text-sm" style="text-decoration:line-through; color:var(--gray-400);">{{ currency }}{{ med.price }}</span>{% endif %}
+            <strong style="color:var(--primary-dark); font-size:1.1rem;">{{ currency }}{{ med.selling_price }}</strong>
+          </div>
+          {% if med.in_stock %}
+          <form method="POST" action="{{ url_for('pharmacy.add_to_cart') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="medicine_id" value="{{ med.id }}"><input type="hidden" name="next" value="{{ request.url }}"><button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-cart-plus"></i></button></form>
+          {% else %}<span class="badge badge-danger">Out of Stock</span>{% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state"><div class="empty-icon"><i class="fas fa-capsules"></i></div><h3>No medicines found</h3><p>Try a different search or browse categories.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container"><div style="max-width:800px; margin:0 auto;">
+  <h1 class="mb-6">Checkout</h1>
+  <form method="POST" enctype="multipart/form-data"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <!-- Address -->
+    <div class="card mb-6"><div class="card-body">
+      <h3 class="mb-4"><i class="fas fa-map-marker-alt text-primary"></i> Delivery Address</h3>
+      {% if addresses %}
+      {% for addr in addresses %}<label class="form-check" style="padding:var(--space-3); border:1px solid var(--gray-200); border-radius:var(--radius); margin-bottom:var(--space-2); cursor:pointer;"><input type="radio" name="address_id" value="{{ addr.id }}" {{ 'checked' if addr.is_default }}><div><strong>{{ addr.label }}</strong> — {{ addr.full_name }}<div class="text-sm text-muted">{{ addr.full_address }}</div></div></label>{% endfor %}
+      {% else %}<p class="text-muted">No saved addresses. <a href="{{ url_for('patient.addresses') }}">Add one</a></p>{% endif %}
+    </div></div>
+    <!-- Prescription -->
+    {% if rx_required %}
+    <div class="card mb-6"><div class="card-body">
+      <h3 class="mb-4"><i class="fas fa-file-prescription text-warning"></i> Prescription Required</h3>
+      <p class="text-sm text-muted mb-4">Some items in your cart require a valid prescription.</p>
+      {% if prescriptions %}
+      <div class="form-group"><label class="form-label">Select an existing prescription</label><select name="prescription_id" class="form-control"><option value="">— Select —</option>{% for rx in prescriptions %}<option value="{{ rx.id }}">{{ rx.prescription_uid }} ({{ rx.created_at.strftime('%d %b %Y') }})</option>{% endfor %}</select></div>
+      <p class="text-center text-muted">— or —</p>
+      {% endif %}
+      <div class="form-group"><label class="form-label">Upload prescription image</label><input type="file" name="prescription_image" class="form-control" accept=".jpg,.jpeg,.png,.pdf"></div>
+    </div></div>
+    {% endif %}
+    <!-- Order Summary -->
+    <div class="card mb-6"><div class="card-body">
+      <h3 class="mb-4">Order Summary</h3>
+      {% for item in cart.items %}
+      <div class="flex-between" style="padding:var(--space-2) 0; {% if not loop.last %}border-bottom:1px solid var(--gray-100);{% endif %}">
+        <span>{{ item.medicine.name }} × {{ item.quantity }}</span><span>{{ currency }}{{ item.line_total }}</span></div>
+      {% endfor %}
+      <div style="border-top:2px solid var(--gray-200); margin-top:var(--space-4); padding-top:var(--space-4);">
+        <div class="flex-between text-sm mb-4"><span>Subtotal</span><span>{{ currency }}{{ cart.subtotal }}</span></div>
+        <div class="flex-between text-sm mb-4"><span>Delivery {% if cart.subtotal >= 500 %}<span class="badge badge-success">FREE</span>{% endif %}</span><span>{{ currency }}{% if cart.subtotal >= 500 %}0{% else %}49{% endif %}</span></div>
+        <div class="flex-between text-sm mb-4"><span>Tax (5% GST)</span><span>{{ currency }}{{ (cart.subtotal * 0.05)|round(2) }}</span></div>
+        <div class="flex-between" style="font-size:1.2rem;"><strong>Total</strong><strong style="color:var(--primary-dark);">{{ currency }}{{ (cart.subtotal + (0 if cart.subtotal >= 500 else 49) + (cart.subtotal * 0.05))|round(2) }}</strong></div>
+      </div>
+    </div></div>
+    <button type="submit" class="btn btn-primary btn-lg btn-block"><i class="fas fa-lock"></i> Place Order</button>
+  </form>
+</div></div>
+{% endblock %}

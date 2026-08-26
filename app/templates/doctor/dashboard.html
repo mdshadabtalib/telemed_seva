@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <div class="flex-between mb-6">
+    <div><h1>Doctor Dashboard</h1><p class="text-muted mb-0">Welcome, Dr. {{ profile.full_name }}</p></div>
+    <form method="POST" action="{{ url_for('doctor.toggle_availability') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="btn {{ 'btn-success' if profile.is_available else 'btn-danger' }}"><i class="fas {{ 'fa-toggle-on' if profile.is_available else 'fa-toggle-off' }}"></i> {{ 'Available' if profile.is_available else 'Unavailable' }}</button></form>
+  </div>
+  {% if not profile.is_verified %}
+  <div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> Your account is not verified yet. <a href="{{ url_for('doctor.verification') }}">Submit verification documents →</a></div>
+  {% endif %}
+  <div class="grid grid-4 mb-8">
+    <div class="stat-card"><div class="stat-icon primary"><i class="fas fa-calendar-day"></i></div><div><div class="stat-value">{{ today_appointments|length }}</div><div class="stat-label">Today's Appointments</div></div></div>
+    <div class="stat-card"><div class="stat-icon success"><i class="fas fa-check-circle"></i></div><div><div class="stat-value">{{ completed_consultations }}</div><div class="stat-label">Completed</div></div></div>
+    <div class="stat-card"><div class="stat-icon info"><i class="fas fa-calendar"></i></div><div><div class="stat-value">{{ total_appointments }}</div><div class="stat-label">Total Appointments</div></div></div>
+    <div class="stat-card"><div class="stat-icon warning"><i class="fas fa-star"></i></div><div><div class="stat-value">{{ profile.average_rating }}</div><div class="stat-label">Rating ({{ profile.review_count }} reviews)</div></div></div>
+  </div>
+  <div class="card"><div class="card-header"><i class="fas fa-calendar-alt"></i> Today's Appointments</div><div class="card-body">
+    {% if today_appointments %}
+    <div class="table-responsive"><table><thead><tr><th>Time</th><th>Patient</th><th>Type</th><th>Status</th><th>Action</th></tr></thead><tbody>
+    {% for appt in today_appointments %}
+    <tr><td>{{ appt.start_time.strftime('%I:%M %p') }}</td><td>{{ appt.patient.display_name }}</td><td><span class="badge badge-info">{{ appt.appointment_type.value }}</span></td><td><span class="badge badge-{{ 'success' if appt.status.value == 'confirmed' else 'warning' }}">{{ appt.status.value }}</span></td>
+    <td>{% if appt.consultation %}<a href="{{ url_for('consultation.room', consultation_id=appt.consultation.id) }}" class="btn btn-primary btn-sm"><i class="fas fa-video"></i> Join</a>{% endif %}</td></tr>
+    {% endfor %}
+    </tbody></table></div>
+    {% else %}<div class="empty-state" style="padding:var(--space-8);"><p>No appointments scheduled for today.</p></div>{% endif %}
+  </div></div>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <h1 class="mb-4">Find a Doctor</h1>
+  <!-- Filters -->
+  <div class="card mb-6"><div class="card-body" style="padding:var(--space-4) var(--space-6);">
+    <form method="GET" style="display:flex; gap:var(--space-4); flex-wrap:wrap; align-items:end;">
+      <div class="form-group mb-0" style="flex:1; min-width:180px;"><label class="form-label">Name</label><input type="text" name="name" class="form-control" value="{{ filters.get('name','') }}" placeholder="Doctor name"></div>
+      <div class="form-group mb-0" style="min-width:180px;"><label class="form-label">Specialty</label><select name="specialty" class="form-control"><option value="">All Specialties</option>{% for s in specialties %}<option value="{{ s.id }}" {{ 'selected' if filters.get('specialty')|int == s.id }}>{{ s.name }}</option>{% endfor %}</select></div>
+      <div class="form-group mb-0" style="min-width:120px;"><label class="form-label">Max Fee</label><input type="number" name="max_fee" class="form-control" value="{{ filters.get('max_fee','') }}" placeholder="{{ currency }}"></div>
+      <div class="form-group mb-0" style="min-width:140px;"><label class="form-label">Sort By</label><select name="sort" class="form-control"><option value="experience" {{ 'selected' if filters.get('sort')=='experience' }}>Experience</option><option value="fee_low" {{ 'selected' if filters.get('sort')=='fee_low' }}>Fee: Low→High</option><option value="fee_high" {{ 'selected' if filters.get('sort')=='fee_high' }}>Fee: High→Low</option></select></div>
+      <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Search</button>
+    </form>
+  </div></div>
+  <!-- Results -->
+  {% if doctors.items %}
+  <div class="grid grid-3">
+    {% for doc in doctors.items %}
+    <div class="doctor-card">
+      <div class="doctor-avatar">{% if doc.avatar %}<img src="/uploads/avatars/{{ doc.avatar }}">{% else %}{{ doc.first_name[0] }}{% endif %}</div>
+      <div class="doctor-name">Dr. {{ doc.full_name }}</div>
+      <div class="doctor-specialty">{{ doc.specialty.name if doc.specialty else 'General' }}</div>
+      <div class="doctor-meta">
+        <span><i class="fas fa-briefcase"></i> {{ doc.experience_years }} yrs</span>
+        <span><i class="fas fa-star text-warning"></i> {{ doc.average_rating }}</span>
+        <span><i class="fas fa-language"></i> {{ doc.languages or 'English' }}</span>
+      </div>
+      <div class="doctor-fee">{{ currency }}{{ doc.consultation_fee }}</div>
+      <div style="margin-top:var(--space-4); display:flex; gap:var(--space-2);">
+        <a href="{{ url_for('doctor.public_profile', doctor_id=doc.id) }}" class="btn btn-outline btn-sm" style="flex:1;">View Profile</a>
+        <a href="{{ url_for('appointments.book', doctor_id=doc.id) }}" class="btn btn-primary btn-sm" style="flex:1;"><i class="fas fa-calendar-plus"></i> Book</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% if doctors.pages > 1 %}
+  <nav class="pagination">
+    {% if doctors.has_prev %}<a href="?{{ request.query_string.decode() }}&page={{ doctors.prev_num }}">← Prev</a>{% endif %}
+    {% for p in doctors.iter_pages() %}{% if p %}<li class="{{ 'active' if p == doctors.page }}"><a href="?page={{ p }}">{{ p }}</a></li>{% endif %}{% endfor %}
+    {% if doctors.has_next %}<a href="?page={{ doctors.next_num }}">Next →</a>{% endif %}
+  </nav>
+  {% endif %}
+  {% else %}
+  <div class="empty-state"><div class="empty-icon"><i class="fas fa-user-doctor"></i></div><h3>No doctors found</h3><p>Try adjusting your search filters.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

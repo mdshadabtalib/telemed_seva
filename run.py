@@ -1,0 +1,12 @@
+"""TeleMed Seva — Application entry point."""
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+from app import create_app
+
+app = create_app(os.getenv('FLASK_ENV', 'development'))
+
+if __name__ == '__main__':
+    app.run(debug=app.config.get('DEBUG', False))

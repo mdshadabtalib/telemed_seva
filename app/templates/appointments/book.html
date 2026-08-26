@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <div style="max-width:800px; margin:0 auto;">
+    <h1 class="mb-6">Book Appointment with Dr. {{ doctor.full_name }}</h1>
+    <div class="card mb-6"><div class="card-body">
+      <div class="flex gap-4" style="align-items:center;">
+        <div class="avatar-lg">{{ doctor.first_name[0] }}</div>
+        <div><strong>Dr. {{ doctor.full_name }}</strong><div class="text-sm text-primary">{{ doctor.specialty.name if doctor.specialty else '' }}</div><div class="text-sm text-muted">{{ currency }}{{ doctor.consultation_fee }} · {{ doctor.consultation_duration }} min</div></div>
+      </div>
+    </div></div>
+
+    <!-- Date Selection -->
+    <div class="card mb-6"><div class="card-body">
+      <h3 class="mb-4">Select Date</h3>
+      <input type="date" id="date-picker" class="form-control" style="max-width:300px;"
+             value="{{ selected_date.isoformat() if selected_date else '' }}"
+             min="{{ today if today is defined else '' }}"
+             onchange="loadSlots({{ doctor.id }}, this)">
+    </div></div>
+
+    <!-- Slots -->
+    <div class="card mb-6"><div class="card-body">
+      <h3 class="mb-4">Available Slots</h3>
+      <div id="slots-container">
+        {% if slots %}
+        <div class="grid grid-3 gap-2">
+          {% for slot in slots %}
+          <button type="button" class="btn {{ 'btn-outline' if slot.available else 'btn-outline disabled' }}" {{ 'disabled' if not slot.available }}
+            onclick="selectSlot(this, '{{ slot.start.isoformat() }}', '{{ slot.end.isoformat() }}', '{{ slot.start_str }} - {{ slot.end_str }}')">
+            {{ slot.start_str }} - {{ slot.end_str }}
+          </button>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted">Select a date to see available slots.</p>
+        {% endif %}
+      </div>
+    </div></div>
+
+    <!-- Booking Form -->
+    <div class="card"><div class="card-body">
+      <h3 class="mb-4">Confirm Booking</h3>
+      <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="date" id="booking-date" value="{{ selected_date.isoformat() if selected_date else '' }}">
+        <input type="hidden" name="start_time" id="selected-start" value="">
+        <input type="hidden" name="end_time" id="selected-end" value="">
+        <div class="mb-4">
+          <strong>Selected Slot: </strong><span id="selected-slot-label" class="text-primary">None selected</span>
+        </div>
+        <div class="form-group"><label class="form-label">Notes for Doctor (optional)</label><textarea name="notes" class="form-control" rows="2" placeholder="Describe your symptoms or reason for visit..."></textarea></div>
+        <button type="submit" id="book-btn" class="btn btn-primary btn-lg btn-block" disabled><i class="fas fa-calendar-check"></i> Confirm Appointment — {{ currency }}{{ doctor.consultation_fee }}</button>
+      </form>
+    </div></div>
+  </div>
+</div>
+{% block extra_js %}
+<script>
+  const datePicker = document.getElementById('date-picker');
+  datePicker.min = new Date().toISOString().split('T')[0];
+  datePicker.addEventListener('change', function() {
+    document.getElementById('booking-date').value = this.value;
+  });
+</script>
+{% endblock %}
+{% endblock %}
