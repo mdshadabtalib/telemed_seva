@@ -1,0 +1,45 @@
+# Version control
+.git
+.gitignore
+
+# Python cache
+__pycache__
+*.py[cod]
+*.pyo
+.pytest_cache
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv
+venv
+env
+
+# Local configuration (never bake into image)
+.env
+*.env.local
+
+# Development / test artefacts
+tests/
+*.db
+telemed_seva.db
+
+# Logs (use named volume in production)
+logs/
+*.log
+
+# Upload files (use named volume in production)
+uploads/
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Migrations — included so db upgrade works inside container
+# migrations/   ← do NOT ignore

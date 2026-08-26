@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <div class="flex-between mb-6">
+    <div>
+      <h1>Doctor Verifications</h1>
+      <p class="text-muted mb-0">Review submitted credentials and license certificates.</p>
+    </div>
+    <div class="flex gap-2">
+      <a href="{{ url_for('admin.verifications', status='pending') }}" class="btn {{ 'btn-primary' if current_status == 'pending' else 'btn-outline' }} btn-sm">Pending</a>
+      <a href="{{ url_for('admin.verifications', status='approved') }}" class="btn {{ 'btn-primary' if current_status == 'approved' else 'btn-outline' }} btn-sm">Approved</a>
+      <a href="{{ url_for('admin.verifications', status='rejected') }}" class="btn {{ 'btn-primary' if current_status == 'rejected' else 'btn-outline' }} btn-sm">Rejected</a>
+    </div>
+  </div>
+
+  {% if verifications.items %}
+  <div class="table-responsive">
+    <table>
+      <thead>
+        <tr>
+          <th>Doctor</th>
+          <th>Specialty</th>
+          <th>Reg. Number</th>
+          <th>Submitted On</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in verifications.items %}
+        <tr>
+          <td>
+            <strong>Dr. {{ v.doctor.full_name }}</strong>
+            <div class="text-sm text-muted">{{ v.doctor.user.email }}</div>
+          </td>
+          <td>{{ v.doctor.specialty.name if v.doctor.specialty else 'Unspecified' }}</td>
+          <td><code>{{ v.doctor.registration_number or 'Not provided' }}</code></td>
+          <td>{{ v.submitted_at.strftime('%d %b %Y, %I:%M %p') if v.submitted_at else '—' }}</td>
+          <td>
+            <span class="badge badge-{{ 'warning' if v.status.value == 'pending' else 'success' if v.status.value == 'approved' else 'danger' }}">
+              {{ v.status.value|title }}
+            </span>
+          </td>
+          <td>
+            <a href="{{ url_for('admin.verification_detail', v_id=v.id) }}" class="btn btn-outline btn-sm">
+              <i class="fas fa-search"></i> Review
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon"><i class="fas fa-check-double"></i></div>
+    <h3>No {{ current_status }} verifications</h3>
+    <p>All verifications in this category are up to date.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

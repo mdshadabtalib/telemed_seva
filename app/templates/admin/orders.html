@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <div class="flex-between mb-6">
+    <div>
+      <h1>Order Management</h1>
+      <p class="text-muted mb-0">Track customer orders, verify prescriptions, and dispatch.</p>
+    </div>
+    <div class="flex gap-2">
+      <a href="{{ url_for('admin.orders') }}" class="btn {{ 'btn-primary' if not request.args.get('status') else 'btn-outline' }} btn-sm">All</a>
+      {% for st in statuses %}
+      <a href="?status={{ st.value }}" class="btn {{ 'btn-primary' if request.args.get('status') == st.value else 'btn-outline' }} btn-sm">
+        {{ st.value|replace('_',' ')|title }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if orders.items %}
+  <div class="table-responsive">
+    <table>
+      <thead>
+        <tr>
+          <th>Order #</th>
+          <th>Customer</th>
+          <th>Total</th>
+          <th>Prescription</th>
+          <th>Status</th>
+          <th>Update Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in orders.items %}
+        <tr>
+          <td>
+            <strong>{{ o.order_number }}</strong>
+            <div class="text-sm text-muted">{{ o.created_at.strftime('%d %b %Y, %I:%M %p') }}</div>
+          </td>
+          <td>
+            <strong>{{ o.user.display_name }}</strong>
+            <div class="text-sm text-muted">{{ o.user.email }}</div>
+          </td>
+          <td><strong>{{ currency }}{{ o.total }}</strong></td>
+          <td>
+            {% if o.prescription_image %}
+              <a href="/uploads/prescriptions/{{ o.prescription_image }}" target="_blank" class="btn btn-outline btn-sm">
+                <i class="fas fa-file-image"></i> View Rx
+              </a>
+            {% elif o.prescription %}
+              <a href="{{ url_for('prescriptions.view', prescription_id=o.prescription.id) }}" target="_blank" class="btn btn-outline btn-sm">
+                <i class="fas fa-file-prescription"></i> Digital Rx
+              </a>
+            {% else %}
+              <span class="text-sm text-muted">Not Required</span>
+            {% endif %}
+          </td>
+          <td>
+            <span class="badge badge-{{ 'success' if o.status.value == 'delivered' else 'warning' if o.status.value in ('pending', 'prescription_verification', 'payment_pending') else 'info' if o.status.value == 'shipped' else 'danger' }}">
+              {{ o.status.value|replace('_',' ')|title }}
+            </span>
+          </td>
+          <td>
+            <form method="POST" action="{{ url_for('admin.update_order_status', order_id=o.id) }}" style="display:flex; gap:var(--space-2); align-items:center;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <select name="status" class="form-control" style="font-size:0.8rem; padding:var(--space-1) var(--space-2);">
+                {% for st in statuses %}
+                <option value="{{ st.value }}" {{ 'selected' if o.status == st }}>{{ st.value|replace('_',' ')|title }}</option>
+                {% endfor %}
+              </select>
+              <button type="submit" class="btn btn-primary btn-sm btn-icon" title="Save status"><i class="fas fa-check"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon"><i class="fas fa-box-open"></i></div>
+    <h3>No orders found</h3>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

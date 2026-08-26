@@ -1,6 +1,7 @@
 """Admin routes — dashboard, verification, user/order/medicine management."""
+import uuid
 from flask import render_template, redirect, url_for, flash, request, abort
-from flask_login import current_user
+from flask_login import current_user, login_required
 
 from . import admin_bp
 from ..extensions import db
@@ -9,7 +10,7 @@ from ..models.doctor import DoctorVerification, VerificationStatus, Specialty
 from ..models.appointment import Appointment, AppointmentStatus
 from ..models.pharmacy import Medicine, MedicineCategory, Inventory, DosageForm
 from ..models.order import Order, OrderStatus
-from ..models.payment import Payment
+from ..models.payment import Payment, Refund, PaymentStatus
 from ..models.support import SupportTicket, TicketStatus
 from ..models.audit import AuditLog
 from ..services.notification_service import notify_verification_update, notify_order_status
@@ -40,6 +41,7 @@ def dashboard():
             db.func.coalesce(db.func.sum(Payment.amount), 0)
         ).filter_by(status='completed').scalar(),
         'open_tickets': SupportTicket.query.filter_by(status=TicketStatus.OPEN).count(),
+        'pending_refunds': Refund.query.filter_by(status='pending').count(),
     }
     return render_template('admin/dashboard.html', title='Admin Dashboard', stats=stats)
 
@@ -310,6 +312,7 @@ def resolve_ticket(ticket_id):
 # ---- Pharmacy Dashboard (for pharmacy_admin role) ----
 
 @admin_bp.route('/pharmacy-dashboard')
+@login_required
 def pharmacy_dashboard():
     if current_user.role not in (UserRole.ADMIN, UserRole.PHARMACY_ADMIN):
         abort(403)
@@ -326,3 +329,239 @@ def audit_logs():
         per_page=50,
     )
     return render_template('admin/audit_logs.html', title='Audit Logs', logs=logs)
+
+
+# ---- Specialty Management ----
+
+@admin_bp.route('/specialties')
+@admin_required
+def specialties():
+    specs = Specialty.query.order_by(Specialty.display_order, Specialty.name).all()
+    return render_template('admin/specialties.html', title='Specialties', specialties=specs)
+
+
+@admin_bp.route('/specialties/add', methods=['POST'])
+@admin_required
+def add_specialty():
+    name = request.form.get('name', '').strip()
+    if not name:
+        flash('Specialty name is required.', 'danger')
+        return redirect(url_for('admin.specialties'))
+
+    if Specialty.query.filter_by(name=name).first():
+        flash('A specialty with that name already exists.', 'warning')
+        return redirect(url_for('admin.specialties'))
+
+    spec = Specialty(
+        name=name,
+        slug=slugify(name),
+        description=request.form.get('description', '').strip(),
+        icon=request.form.get('icon', 'fa-stethoscope').strip(),
+        display_order=int(request.form.get('display_order', 0) or 0),
+        is_active=True,
+    )
+    db.session.add(spec)
+    db.session.commit()
+    flash(f'Specialty "{name}" added.', 'success')
+    return redirect(url_for('admin.specialties'))
+
+
+@admin_bp.route('/specialties/<int:spec_id>/toggle', methods=['POST'])
+@admin_required
+def toggle_specialty(spec_id):
+    spec = Specialty.query.get_or_404(spec_id)
+    spec.is_active = not spec.is_active
+    db.session.commit()
+    state = 'activated' if spec.is_active else 'deactivated'
+    flash(f'Specialty "{spec.name}" {state}.', 'info')
+    return redirect(url_for('admin.specialties'))
+
+
+@admin_bp.route('/specialties/<int:spec_id>/delete', methods=['POST'])
+@admin_required
+def delete_specialty(spec_id):
+    spec = Specialty.query.get_or_404(spec_id)
+    if spec.doctors:
+        flash('Cannot delete a specialty that has doctors assigned to it.', 'danger')
+        return redirect(url_for('admin.specialties'))
+    db.session.delete(spec)
+    db.session.commit()
+    flash(f'Specialty "{spec.name}" deleted.', 'info')
+    return redirect(url_for('admin.specialties'))
+
+
+# ---- Medicine Category Management ----
+
+@admin_bp.route('/medicine-categories')
+@admin_required
+def medicine_categories():
+    from ..models.pharmacy import MedicineCategory
+    cats = MedicineCategory.query.order_by(MedicineCategory.name).all()
+    return render_template('admin/medicine_categories.html',
+                           title='Medicine Categories', categories=cats)
+
+
+@admin_bp.route('/medicine-categories/add', methods=['POST'])
+@admin_required
+def add_medicine_category():
+    from ..models.pharmacy import MedicineCategory
+    name = request.form.get('name', '').strip()
+    if not name:
+        flash('Category name is required.', 'danger')
+        return redirect(url_for('admin.medicine_categories'))
+
+    if MedicineCategory.query.filter_by(name=name).first():
+        flash('A category with that name already exists.', 'warning')
+        return redirect(url_for('admin.medicine_categories'))
+
+    cat = MedicineCategory(
+        name=name,
+        slug=slugify(name),
+        description=request.form.get('description', '').strip(),
+        icon=request.form.get('icon', 'fa-pills').strip(),
+        is_active=True,
+    )
+    db.session.add(cat)
+    db.session.commit()
+    flash(f'Category "{name}" added.', 'success')
+    return redirect(url_for('admin.medicine_categories'))
+
+
+@admin_bp.route('/medicine-categories/<int:cat_id>/toggle', methods=['POST'])
+@admin_required
+def toggle_medicine_category(cat_id):
+    from ..models.pharmacy import MedicineCategory
+    cat = MedicineCategory.query.get_or_404(cat_id)
+    cat.is_active = not cat.is_active
+    db.session.commit()
+    state = 'activated' if cat.is_active else 'deactivated'
+    flash(f'Category "{cat.name}" {state}.', 'info')
+    return redirect(url_for('admin.medicine_categories'))
+
+
+@admin_bp.route('/medicine-categories/<int:cat_id>/delete', methods=['POST'])
+@admin_required
+def delete_medicine_category(cat_id):
+    from ..models.pharmacy import MedicineCategory
+    cat = MedicineCategory.query.get_or_404(cat_id)
+    if cat.medicines.count() > 0:
+        flash('Cannot delete a category that has medicines assigned.', 'danger')
+        return redirect(url_for('admin.medicine_categories'))
+    db.session.delete(cat)
+    db.session.commit()
+    flash(f'Category "{cat.name}" deleted.', 'info')
+    return redirect(url_for('admin.medicine_categories'))
+
+
+# ---- Refund Management ----
+
+@admin_bp.route('/refunds')
+@admin_required
+def refunds():
+    """List all refund requests with filtering."""
+    status_filter = request.args.get('status', 'pending')
+    query = Refund.query
+
+    if status_filter and status_filter != 'all':
+        query = query.filter_by(status=status_filter)
+
+    refunds = paginate_query(
+        query.order_by(Refund.created_at.desc()), per_page=20
+    )
+
+    # Calculate pending refund amount
+    pending_amount = db.session.query(
+        db.func.coalesce(db.func.sum(Refund.amount), 0)
+    ).filter_by(status='pending').scalar()
+
+    # Calculate processed refund amount
+    processed_amount = db.session.query(
+        db.func.coalesce(db.func.sum(Refund.amount), 0)
+    ).filter_by(status='completed').scalar()
+
+    stats = {
+        'pending_count': Refund.query.filter_by(status='pending').count(),
+        'pending_amount': float(pending_amount),
+        'processed_amount': float(processed_amount),
+    }
+
+    return render_template(
+        'admin/refunds.html',
+        title='Refund Management',
+        refunds=refunds,
+        current_status=status_filter,
+        stats=stats,
+    )
+
+
+@admin_bp.route('/refunds/<int:refund_id>/process', methods=['POST'])
+@admin_required
+def process_refund(refund_id):
+    """Approve or reject a refund request."""
+    refund = Refund.query.get_or_404(refund_id)
+
+    if refund.status != 'pending':
+        flash('This refund has already been processed.', 'warning')
+        return redirect(url_for('admin.refunds'))
+
+    action = request.form.get('action')
+
+    if action == 'approve':
+        # In production, integrate with payment gateway to initiate actual refund
+        # For now, we mark it as completed
+        refund.status = 'completed'
+        refund.processed_by = current_user.id
+        refund.provider_refund_id = f'REFUND-{uuid.uuid4().hex[:10].upper()}'
+
+        # Update payment status
+        payment = refund.payment
+        total_refunded = sum(r.amount for r in payment.refunds if r.status == 'completed')
+
+        if total_refunded >= payment.amount:
+            payment.status = PaymentStatus.REFUNDED
+        else:
+            payment.status = PaymentStatus.PARTIALLY_REFUNDED
+
+        # Notify user
+        from ..services.notification_service import notify
+        from ..models.notification import NotificationType
+        notify(
+            payment.user_id,
+            NotificationType.PAYMENT_REFUNDED,
+            'Refund Processed',
+            f'Your refund of ₹{refund.amount} has been processed and will be credited to your account within 5-7 business days.',
+            url_for('patient.appointments')
+        )
+
+        log_audit(
+            current_user.id, 'approve_refund', 'refund',
+            refund.id, f'Refund of ₹{refund.amount} approved for payment {payment.payment_ref}'
+        )
+
+        flash(f'Refund of ₹{refund.amount} approved successfully.', 'success')
+
+    elif action == 'reject':
+        refund.status = 'rejected'
+        refund.processed_by = current_user.id
+        rejection_reason = request.form.get('rejection_reason', '').strip()
+
+        # Notify user
+        from ..services.notification_service import notify
+        from ..models.notification import NotificationType
+        notify(
+            refund.payment.user_id,
+            NotificationType.PAYMENT_REFUNDED,
+            'Refund Rejected',
+            f'Your refund request has been rejected. Reason: {rejection_reason or "Not specified"}',
+            None
+        )
+
+        log_audit(
+            current_user.id, 'reject_refund', 'refund',
+            refund.id, f'Refund of ₹{refund.amount} rejected: {rejection_reason}'
+        )
+
+        flash(f'Refund request rejected.', 'info')
+
+    db.session.commit()
+    return redirect(url_for('admin.refunds'))

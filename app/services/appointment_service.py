@@ -2,10 +2,14 @@
 from datetime import datetime, date, time, timedelta, timezone
 
 from sqlalchemy import and_
+from sqlalchemy.exc import IntegrityError
 
 from ..extensions import db
 from ..models.appointment import Appointment, AppointmentStatus
 from ..models.doctor import Availability, DayOfWeek
+
+# How long a slot lock is held while the patient completes payment (minutes)
+SLOT_LOCK_MINUTES = 10
 
 
 def get_available_slots(doctor_profile, target_date):
@@ -24,7 +28,9 @@ def get_available_slots(doctor_profile, target_date):
     if not availabilities:
         return []
 
-    # Get already booked slots for this doctor on this date
+    now = datetime.now(timezone.utc)
+
+    # Booked and confirmed/pending slots
     booked = Appointment.query.filter(
         Appointment.doctor_id == doctor_profile.id,
         Appointment.appointment_date == target_date,
@@ -35,8 +41,7 @@ def get_available_slots(doctor_profile, target_date):
     ).all()
     booked_times = {(a.start_time, a.end_time) for a in booked}
 
-    # Also check locked (not expired) slots
-    now = datetime.now(timezone.utc)
+    # Actively locked slots (lock not expired, slot not yet booked/paid)
     locked = Appointment.query.filter(
         Appointment.doctor_id == doctor_profile.id,
         Appointment.appointment_date == target_date,
@@ -79,9 +84,17 @@ def get_available_slots(doctor_profile, target_date):
 
 def book_appointment(patient_id, doctor_profile, target_date, start_time, end_time,
                      appointment_type='video', patient_notes=None):
-    """Book an appointment with double-booking prevention.
+    """Reserve an appointment slot with optimistic locking.
 
-    Uses database unique constraint + optimistic approach.
+    The appointment is created in PENDING status with a slot lock so the
+    patient can complete payment.  The slot lock prevents another patient
+    from booking the same slot for SLOT_LOCK_MINUTES.
+
+    Status transitions:
+        book_appointment()   → PENDING  (slot locked)
+        confirm_appointment() → CONFIRMED (after successful payment)
+        cancel / timeout     → CANCELLED / lock expired (slot freed)
+
     Returns (appointment, error_message).
     """
     # Validate date is not in the past
@@ -100,6 +113,8 @@ def book_appointment(patient_id, doctor_profile, target_date, start_time, end_ti
     except ValueError:
         appt_type = AppointmentType.VIDEO
 
+    lock_expiry = datetime.now(timezone.utc) + timedelta(minutes=SLOT_LOCK_MINUTES)
+
     appointment = Appointment(
         patient_id=patient_id,
         doctor_id=doctor_profile.id,
@@ -107,16 +122,62 @@ def book_appointment(patient_id, doctor_profile, target_date, start_time, end_ti
         start_time=start_time,
         end_time=end_time,
         appointment_type=appt_type,
-        status=AppointmentStatus.CONFIRMED,
+        # Start PENDING — transitions to CONFIRMED only after payment
+        status=AppointmentStatus.PENDING,
         consultation_fee=doctor_profile.consultation_fee,
         patient_notes=patient_notes,
+        # Lock this slot so no-one else can book it during payment
+        locked_until=lock_expiry,
+        locked_by=patient_id,
     )
 
     try:
         db.session.add(appointment)
-        db.session.flush()  # triggers unique constraint check
-    except Exception:
+        db.session.flush()  # triggers unique constraint check immediately
+    except IntegrityError:
         db.session.rollback()
         return None, 'This slot is no longer available. Please select another.'
 
     return appointment, None
+
+
+def confirm_appointment(appointment):
+    """Transition an appointment from PENDING to CONFIRMED after payment.
+
+    Clears the slot lock.  Raises ValueError if the transition is invalid.
+    """
+    appointment.transition_to(AppointmentStatus.CONFIRMED)
+    appointment.locked_until = None
+    appointment.locked_by = None
+
+
+def release_expired_locks():
+    """Release slot locks that have passed their expiry without payment.
+
+    This is called opportunistically — no Celery required, though a
+    scheduled task would be cleaner in a larger deployment.
+    """
+    now = datetime.now(timezone.utc)
+    expired = Appointment.query.filter(
+        Appointment.status == AppointmentStatus.PENDING,
+        Appointment.locked_until < now,
+        Appointment.locked_by.isnot(None),
+    ).all()
+
+    for appt in expired:
+        # Only cancel if the slot was locked for payment (locked_by set)
+        # and payment was never completed.
+        from ..models.payment import Payment, PaymentStatus
+        paid = Payment.query.filter_by(
+            reference_type='appointment',
+            reference_id=appt.id,
+        ).filter(Payment.status == PaymentStatus.COMPLETED).first()
+
+        if not paid:
+            appt.status = AppointmentStatus.CANCELLED
+            appt.cancellation_reason = 'Payment not completed within the allowed time.'
+            appt.locked_until = None
+            appt.locked_by = None
+
+    if expired:
+        db.session.commit()

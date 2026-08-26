@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+  <div class="flex-between mb-6">
+    <div>
+      <h1>Refund Management</h1>
+      <p class="text-muted mb-0">Review and process refund requests from patients.</p>
+    </div>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline btn-sm">
+      <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+  </div>
+
+  {# Stats Overview #}
+  <div class="grid grid-3 mb-6">
+    <div class="stat-card">
+      <div class="stat-icon warning"><i class="fas fa-clock"></i></div>
+      <div>
+        <div class="stat-value">{{ stats.pending_count }}</div>
+        <div class="stat-label">Pending Requests</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon danger"><i class="fas fa-indian-rupee-sign"></i></div>
+      <div>
+        <div class="stat-value">{{ currency }}{{ "%.2f"|format(stats.pending_amount) }}</div>
+        <div class="stat-label">Pending Amount</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon success"><i class="fas fa-check-circle"></i></div>
+      <div>
+        <div class="stat-value">{{ currency }}{{ "%.2f"|format(stats.processed_amount) }}</div>
+        <div class="stat-label">Total Processed</div>
+      </div>
+    </div>
+  </div>
+
+  {# Status Filter #}
+  <div class="card mb-4">
+    <div class="card-header flex-between">
+      <h3 class="mb-0">Refund Requests</h3>
+      <div class="btn-group">
+        <a href="{{ url_for('admin.refunds', status='all') }}"
+           class="btn btn-sm {{ 'btn-primary' if current_status == 'all' else 'btn-outline' }}">
+          All
+        </a>
+        <a href="{{ url_for('admin.refunds', status='pending') }}"
+           class="btn btn-sm {{ 'btn-primary' if current_status == 'pending' else 'btn-outline' }}">
+          Pending
+        </a>
+        <a href="{{ url_for('admin.refunds', status='completed') }}"
+           class="btn btn-sm {{ 'btn-primary' if current_status == 'completed' else 'btn-outline' }}">
+          Completed
+        </a>
+        <a href="{{ url_for('admin.refunds', status='rejected') }}"
+           class="btn btn-sm {{ 'btn-primary' if current_status == 'rejected' else 'btn-outline' }}">
+          Rejected
+        </a>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Refund ID</th>
+            <th>Patient</th>
+            <th>Payment Ref</th>
+            <th>Amount</th>
+            <th>Reason</th>
+            <th>Requested</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if refunds.items %}
+            {% for refund in refunds.items %}
+            <tr>
+              <td>
+                <strong>#{{ refund.id }}</strong>
+              </td>
+              <td>
+                <div>
+                  <strong>{{ refund.payment.user.display_name }}</strong>
+                  <div class="text-sm text-muted">{{ refund.payment.user.email }}</div>
+                </div>
+              </td>
+              <td>
+                <span class="badge badge-light">{{ refund.payment.payment_ref }}</span>
+                <div class="text-sm text-muted">
+                  Original: {{ currency }}{{ "%.2f"|format(refund.payment.amount) }}
+                </div>
+              </td>
+              <td>
+                <strong class="text-danger">{{ currency }}{{ "%.2f"|format(refund.amount) }}</strong>
+              </td>
+              <td>
+                <div style="max-width: 200px;">
+                  {{ refund.reason or 'No reason provided' }}
+                </div>
+              </td>
+              <td>
+                <div class="text-sm">
+                  {{ refund.created_at.strftime('%d %b %Y') }}
+                  <div class="text-muted">{{ refund.created_at.strftime('%I:%M %p') }}</div>
+                </div>
+              </td>
+              <td>
+                {% if refund.status == 'pending' %}
+                  <span class="badge badge-warning">Pending</span>
+                {% elif refund.status == 'completed' %}
+                  <span class="badge badge-success">Completed</span>
+                {% elif refund.status == 'rejected' %}
+                  <span class="badge badge-danger">Rejected</span>
+                {% else %}
+                  <span class="badge badge-light">{{ refund.status | title }}</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if refund.status == 'pending' %}
+                  <div class="btn-group">
+                    <button class="btn btn-success btn-sm"
+                            onclick="processRefund({{ refund.id }}, 'approve')">
+                      <i class="fas fa-check"></i> Approve
+                    </button>
+                    <button class="btn btn-danger btn-sm"
+                            onclick="openRejectModal({{ refund.id }})">
+                      <i class="fas fa-times"></i> Reject
+                    </button>
+                  </div>
+                {% else %}
+                  <span class="text-muted text-sm">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="8" class="text-center text-muted py-8">
+                <i class="fas fa-inbox fa-3x mb-3"></i>
+                <p>No {{ 'pending' if current_status == 'pending' else '' }} refund requests found.</p>
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+    {% if refunds.pages > 1 %}
+    <div class="card-footer">
+      <div class="pagination">
+        {% if refunds.has_prev %}
+          <a href="{{ url_for('admin.refunds', status=current_status, page=refunds.prev_num) }}"
+             class="pagination-link">Previous</a>
+        {% endif %}
+        <span class="pagination-info">Page {{ refunds.page }} of {{ refunds.pages }}</span>
+        {% if refunds.has_next %}
+          <a href="{{ url_for('admin.refunds', status=current_status, page=refunds.next_num) }}"
+             class="pagination-link">Next</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{# Reject Modal #}
+<div class="modal-overlay" id="reject-modal">
+  <div class="modal" style="max-width: 480px;">
+    <div class="modal-header">
+      <h3>Reject Refund Request</h3>
+      <button class="modal-close" onclick="closeModal('reject-modal')">&times;</button>
+    </div>
+    <form id="reject-form" method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="action" value="reject">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Rejection Reason <span class="text-danger">*</span></label>
+          <textarea name="rejection_reason" class="form-control" rows="4" required
+                    placeholder="Explain why this refund is being rejected…"></textarea>
+          <small class="form-text">This reason will be sent to the patient.</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('reject-modal')">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-danger">
+          <i class="fas fa-times"></i> Reject Refund
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function processRefund(refundId, action) {
+    if (action === 'approve') {
+      if (!confirm('Are you sure you want to approve this refund? This action cannot be undone.')) {
+        return;
+      }
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = `/admin/refunds/${refundId}/process`;
+      
+      const csrfInput = document.createElement('input');
+      csrfInput.type = 'hidden';
+      csrfInput.name = 'csrf_token';
+      csrfInput.value = '{{ csrf_token() }}';
+      
+      const actionInput = document.createElement('input');
+      actionInput.type = 'hidden';
+      actionInput.name = 'action';
+      actionInput.value = 'approve';
+      
+      form.appendChild(csrfInput);
+      form.appendChild(actionInput);
+      document.body.appendChild(form);
+      form.submit();
+    }
+  }
+
+  function openRejectModal(refundId) {
+    const form = document.getElementById('reject-form');
+    form.action = `/admin/refunds/${refundId}/process`;
+    openModal('reject-modal');
+  }
+</script>
+{% endblock %}

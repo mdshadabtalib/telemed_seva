@@ -13,7 +13,14 @@
   <td>{% if current_user.role.value == 'patient' %}Dr. {{ appt.doctor.full_name }}{% else %}{{ appt.patient.display_name }}{% endif %}</td>
   <td><span class="badge badge-{{ 'success' if appt.status.value == 'confirmed' else 'warning' if appt.status.value == 'pending' else 'danger' if appt.status.value == 'cancelled' else 'info' }}">{{ appt.status.value }}</span></td>
   <td>{{ currency }}{{ appt.consultation_fee }}</td>
-  <td><a href="{{ url_for('appointments.detail', appointment_id=appt.id) }}" class="btn btn-outline btn-sm">View</a></td></tr>
+  <td><a href="{{ url_for('appointments.detail', appointment_id=appt.id) }}" class="btn btn-outline btn-sm">View</a>
+  {% if current_user.role.value == 'patient' and appt.status.value == 'completed' %}
+    {% set existing_review = appt.consultation and appt.consultation.prescription %}
+    <a href="{{ url_for('patient.submit_review', appointment_id=appt.id) }}" class="btn btn-outline btn-sm" style="margin-left:0.25rem;" title="Leave a review">
+      <i class="fas fa-star"></i>
+    </a>
+  {% endif %}
+  </td></tr>
   {% endfor %}
   </tbody></table></div>
   {% else %}<div class="empty-state"><div class="empty-icon"><i class="fas fa-calendar"></i></div><h3>No appointments found</h3></div>{% endif %}

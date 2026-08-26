@@ -8,8 +8,9 @@ from ..models.user import UserRole
 from ..models.payment import Payment, PaymentStatus, PaymentType
 from ..models.appointment import Appointment, AppointmentStatus
 from ..models.order import Order, OrderStatus
+from ..services.appointment_service import confirm_appointment, release_expired_locks
 from ..services.payment_service import create_payment, complete_payment
-from ..services.notification_service import notify
+from ..services.notification_service import notify, notify_appointment_booked
 from ..models.notification import NotificationType
 from ..utils.decorators import role_required
 from ..utils.helpers import paginate_query
@@ -22,6 +23,22 @@ def pay_appointment(appointment_id):
     appointment = Appointment.query.get_or_404(appointment_id)
     if appointment.patient_id != current_user.id:
         abort(403)
+
+    # Release any expired slot locks before showing the payment page
+    release_expired_locks()
+
+    # Guard: appointment must still be pending (slot lock active)
+    if appointment.status == AppointmentStatus.CONFIRMED:
+        flash('This appointment has already been paid for.', 'info')
+        return redirect(url_for('appointments.detail', appointment_id=appointment_id))
+
+    if appointment.status == AppointmentStatus.CANCELLED:
+        flash('This appointment was cancelled (payment window expired). Please book again.', 'warning')
+        return redirect(url_for('appointments.search_doctors'))
+
+    if appointment.status != AppointmentStatus.PENDING:
+        flash('Payment is not available for this appointment.', 'warning')
+        return redirect(url_for('appointments.detail', appointment_id=appointment_id))
 
     if request.method == 'POST':
         payment, result = create_payment(
@@ -40,10 +57,17 @@ def pay_appointment(appointment_id):
         if result.get('provider') == 'mock':
             payment, err = complete_payment(payment.id)
             if payment:
-                appointment.status = AppointmentStatus.CONFIRMED
+                # Confirm the appointment now that payment succeeded
+                confirm_appointment(appointment)
+                # Notify both parties
+                notify_appointment_booked(
+                    appointment.patient_id,
+                    appointment.doctor.user_id,
+                    appointment,
+                )
                 notify(current_user.id, NotificationType.PAYMENT_RECEIVED,
                        'Payment Successful',
-                       f'Payment of ₹{appointment.consultation_fee} received for appointment.',
+                       f'Payment of ₹{appointment.consultation_fee} received. Appointment confirmed.',
                        link=f'/appointments/{appointment.id}')
                 db.session.commit()
                 flash('Payment successful! Appointment confirmed.', 'success')

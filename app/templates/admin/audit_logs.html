@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <div class="flex-between mb-6">
+    <div>
+      <h1>Security & Audit Logs</h1>
+      <p class="text-muted mb-0">Immutable record of security events and administrative actions.</p>
+    </div>
+  </div>
+
+  {% if logs.items %}
+  <div class="table-responsive">
+    <table>
+      <thead>
+        <tr>
+          <th>Timestamp (UTC)</th>
+          <th>Actor</th>
+          <th>Action</th>
+          <th>Target</th>
+          <th>Target ID</th>
+          <th>IP Address</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for l in logs.items %}
+        <tr>
+          <td><code class="text-sm">{{ l.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</code></td>
+          <td>{{ l.user.email if l.user else 'System' }}</td>
+          <td><span class="badge badge-secondary">{{ l.action }}</span></td>
+          <td><code>{{ l.resource_type or '—' }}</code></td>
+          <td><code>{{ l.resource_id or '—' }}</code></td>
+          <td><code class="text-sm">{{ l.ip_address or '—' }}</code></td>
+          <td class="text-sm">{{ l.details or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon"><i class="fas fa-history"></i></div>
+    <h3>No audit entries</h3>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

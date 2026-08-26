@@ -57,6 +57,9 @@ def search_doctors():
 
     doctors = paginate_query(query, per_page=12)
 
+    # Bulk-load rating stats to avoid N+1 queries on the list page
+    DoctorProfile.load_rating_stats([d.id for d in doctors.items])
+
     return render_template(
         'appointments/search.html',
         title='Find a Doctor',
@@ -118,8 +121,8 @@ def book(doctor_id):
         notify_appointment_booked(current_user.id, doctor.user_id, appointment)
         db.session.commit()
 
-        flash('Appointment booked successfully!', 'success')
-        return redirect(url_for('appointments.detail', appointment_id=appointment.id))
+        flash('Appointment slot reserved for 10 minutes. Please complete payment to confirm.', 'info')
+        return redirect(url_for('payments.pay_appointment', appointment_id=appointment.id))
 
     # GET: show booking page with available dates
     selected_date_str = request.args.get('date')

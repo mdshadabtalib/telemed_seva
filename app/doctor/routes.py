@@ -1,5 +1,5 @@
 """Doctor routes — dashboard, profile, verification, availability, public profile."""
-from datetime import datetime, timezone, time
+from datetime import datetime, timezone
 
 from flask import render_template, redirect, url_for, flash, request, abort
 from flask_login import current_user, login_required
@@ -13,7 +13,8 @@ from ..models.doctor import (
 from ..models.appointment import Appointment, AppointmentStatus
 from ..models.review import Review
 from ..utils.decorators import role_required, verified_doctor_required
-from ..utils.helpers import save_upload
+from ..utils.helpers import save_upload, paginate_query
+from ..utils.forms import DoctorProfileForm, AvailabilityForm
 
 
 @doctor_bp.route('/dashboard')
@@ -45,42 +46,24 @@ def dashboard():
 @role_required(UserRole.DOCTOR)
 def profile():
     p = current_user.doctor_profile
-    specialties = Specialty.query.filter_by(is_active=True).order_by(Specialty.name).all()
+    form = DoctorProfileForm(obj=p)
 
-    if request.method == 'POST':
-        p.first_name = request.form.get('first_name', '').strip()
-        p.last_name = request.form.get('last_name', '').strip()
-        p.phone = request.form.get('phone', '').strip()
-        p.bio = request.form.get('bio', '').strip()
-        p.qualifications = request.form.get('qualifications', '').strip()
-        p.registration_number = request.form.get('registration_number', '').strip()
-        p.languages = request.form.get('languages', '').strip()
+    if form.validate_on_submit():
+        p.first_name          = form.first_name.data.strip()
+        p.last_name           = form.last_name.data.strip()
+        p.phone               = form.phone.data.strip() if form.phone.data else None
+        p.bio                 = form.bio.data.strip() if form.bio.data else None
+        p.qualifications      = form.qualifications.data.strip() if form.qualifications.data else None
+        p.registration_number = form.registration_number.data.strip() if form.registration_number.data else None
+        p.languages           = form.languages.data.strip() if form.languages.data else None
+        p.experience_years    = form.experience_years.data or 0
+        p.consultation_fee    = form.consultation_fee.data or 0
+        p.consultation_duration = form.consultation_duration.data or 30
+        if form.specialty_id.data:
+            p.specialty_id = form.specialty_id.data or None
 
-        exp = request.form.get('experience_years', 0)
-        try:
-            p.experience_years = int(exp)
-        except (ValueError, TypeError):
-            pass
-
-        fee = request.form.get('consultation_fee', 0)
-        try:
-            p.consultation_fee = float(fee)
-        except (ValueError, TypeError):
-            pass
-
-        duration = request.form.get('consultation_duration', 30)
-        try:
-            p.consultation_duration = int(duration)
-        except (ValueError, TypeError):
-            pass
-
-        spec_id = request.form.get('specialty_id')
-        if spec_id:
-            p.specialty_id = int(spec_id)
-
-        avatar = request.files.get('avatar')
-        if avatar and avatar.filename:
-            filename = save_upload(avatar, 'avatars',
+        if form.avatar.data:
+            filename = save_upload(form.avatar.data, 'avatars',
                                    allowed_extensions={'png', 'jpg', 'jpeg', 'webp'})
             if filename:
                 p.avatar = filename
@@ -91,7 +74,7 @@ def profile():
 
     return render_template(
         'doctor/profile.html', title='Doctor Profile',
-        profile=p, specialties=specialties,
+        profile=p, form=form,
     )
 
 
@@ -148,27 +131,12 @@ def verification():
 @role_required(UserRole.DOCTOR)
 def availability():
     p = current_user.doctor_profile
+    form = AvailabilityForm()
 
-    if request.method == 'POST':
-        day = request.form.get('day_of_week')
-        start = request.form.get('start_time')
-        end = request.form.get('end_time')
-
-        if not all([day, start, end]):
-            flash('All fields are required.', 'danger')
-            return redirect(url_for('doctor.availability'))
-
-        try:
-            day_enum = DayOfWeek(int(day))
-            start_time = time.fromisoformat(start)
-            end_time = time.fromisoformat(end)
-        except (ValueError, TypeError):
-            flash('Invalid input.', 'danger')
-            return redirect(url_for('doctor.availability'))
-
-        if start_time >= end_time:
-            flash('Start time must be before end time.', 'danger')
-            return redirect(url_for('doctor.availability'))
+    if form.validate_on_submit():
+        day_enum   = DayOfWeek(form.day_of_week.data)
+        start_time = form.start_time.data
+        end_time   = form.end_time.data
 
         existing = Availability.query.filter_by(
             doctor_id=p.id, day_of_week=day_enum, start_time=start_time
@@ -198,7 +166,7 @@ def availability():
 
     return render_template(
         'doctor/availability.html', title='Manage Availability',
-        profile=p, slots=slots, days=DayOfWeek,
+        profile=p, slots=slots, days=DayOfWeek, form=form,
     )
 
 
@@ -234,4 +202,63 @@ def public_profile(doctor_id):
     return render_template(
         'doctor/public_profile.html', title=f'Dr. {doc.full_name}',
         doctor=doc, reviews=reviews,
+    )
+
+
+@doctor_bp.route('/earnings')
+@role_required(UserRole.DOCTOR)
+def earnings():
+    """Doctor earnings and payment summary."""
+    from ..models.payment import Payment, PaymentStatus, PaymentType
+    from ..models.appointment import AppointmentStatus
+    from sqlalchemy import func
+
+    profile = current_user.doctor_profile
+
+    # Confirmed/completed appointments
+    completed_appts = Appointment.query.filter_by(
+        doctor_id=profile.id,
+        status=AppointmentStatus.COMPLETED,
+    ).order_by(Appointment.appointment_date.desc()).all()
+
+    # Aggregate earnings from completed payments linked to these appointments
+    appointment_ids = [a.id for a in completed_appts]
+
+    # Total earned — sum of completed consultation payments for this doctor's appointments
+    total_earned = db.session.query(
+        func.coalesce(func.sum(Payment.amount), 0)
+    ).filter(
+        Payment.reference_type == 'appointment',
+        Payment.reference_id.in_(appointment_ids) if appointment_ids else db.false(),
+        Payment.status == PaymentStatus.COMPLETED,
+        Payment.payment_type == PaymentType.CONSULTATION,
+    ).scalar()
+
+    # Monthly breakdown (last 6 months)
+    from datetime import date, timedelta
+    from collections import defaultdict
+
+    monthly = defaultdict(float)
+    for appt in completed_appts:
+        key = appt.appointment_date.strftime('%b %Y')
+        monthly[key] += float(appt.consultation_fee)
+
+    # Recent payments (paginated)
+    payments = paginate_query(
+        Payment.query.filter(
+            Payment.reference_type == 'appointment',
+            Payment.reference_id.in_(appointment_ids) if appointment_ids else db.false(),
+            Payment.status == PaymentStatus.COMPLETED,
+        ).order_by(Payment.created_at.desc()),
+        per_page=15,
+    )
+
+    return render_template(
+        'doctor/earnings.html',
+        title='My Earnings',
+        profile=profile,
+        total_earned=float(total_earned),
+        completed_count=len(completed_appts),
+        monthly_breakdown=dict(list(monthly.items())[:6]),
+        payments=payments,
     )

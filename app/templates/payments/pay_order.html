@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <div style="max-width:600px; margin:0 auto;">
+    <h1 class="mb-6">Pay for Pharmacy Order</h1>
+
+    <div class="card mb-6">
+      <div class="card-body">
+        <h3 class="mb-4">Order Summary — #{{ order.order_number }}</h3>
+        
+        {% for item in order.items %}
+        <div class="flex-between mb-2">
+          <span>{{ item.medicine_name }} (× {{ item.quantity }})</span>
+          <strong>{{ currency }}{{ item.total_price }}</strong>
+        </div>
+        {% endfor %}
+
+        <div style="border-top:1px solid var(--gray-200); margin:var(--space-3) 0; padding-top:var(--space-3);">
+          <div class="flex-between text-sm mb-1">
+            <span class="text-muted">Subtotal:</span>
+            <span>{{ currency }}{{ order.subtotal }}</span>
+          </div>
+          <div class="flex-between text-sm mb-1">
+            <span class="text-muted">Delivery Charges:</span>
+            <span>{{ currency }}{{ order.delivery_charge }}</span>
+          </div>
+          <div class="flex-between text-sm mb-1">
+            <span class="text-muted">GST & Taxes:</span>
+            <span>{{ currency }}{{ order.tax }}</span>
+          </div>
+        </div>
+
+        <div style="border-top:2px solid var(--gray-200); padding-top:var(--space-3);">
+          <div class="flex-between">
+            <span style="font-size:1.1rem; font-weight:700;">Total Amount</span>
+            <span style="font-size:1.5rem; font-weight:800; color:var(--primary-dark);">{{ currency }}{{ order.total }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <h3 class="mb-4">Proceed to Payment</h3>
+        <form method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <div class="p-4 mb-4" style="background:var(--primary-50); border-radius:var(--radius); border:1px solid var(--primary-100);">
+            <div class="flex gap-3" style="align-items:center;">
+              <i class="fas fa-credit-card text-primary" style="font-size:1.5rem;"></i>
+              <div>
+                <strong>Encrypted Transaction</strong>
+                <div class="text-sm text-muted">256-bit secure SSL checkout. Mock / Sandbox enabled.</div>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg btn-block">
+            <i class="fas fa-lock"></i> Authorize & Pay {{ currency }}{{ order.total }}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

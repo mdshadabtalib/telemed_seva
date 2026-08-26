@@ -180,6 +180,13 @@ class DoctorProfile(db.Model):
 
     @property
     def average_rating(self):
+        """Per-instance rating — safe but fires a query each call.
+
+        For list views, call DoctorProfile.load_rating_stats() first.
+        If _avg_rating has been pre-loaded, that is returned directly.
+        """
+        if hasattr(self, '_avg_rating'):
+            return self._avg_rating
         from .review import Review
         result = db.session.query(db.func.avg(Review.rating)).filter(
             Review.doctor_id == self.id
@@ -188,8 +195,43 @@ class DoctorProfile(db.Model):
 
     @property
     def review_count(self):
+        if hasattr(self, '_review_count'):
+            return self._review_count
         from .review import Review
         return Review.query.filter_by(doctor_id=self.id).count()
+
+    @classmethod
+    def load_rating_stats(cls, doctor_ids):
+        """Bulk-load average rating and review count for a list of doctor IDs.
+
+        Eliminates the N+1 problem on list pages.  Call once per page::
+
+            doctors = paginate_query(...)
+            DoctorProfile.load_rating_stats([d.id for d in doctors.items])
+
+        Each instance then has `_avg_rating` and `_review_count` set so the
+        ``average_rating`` and ``review_count`` properties skip the DB query.
+        """
+        from .review import Review
+        if not doctor_ids:
+            return
+
+        rows = db.session.query(
+            Review.doctor_id,
+            db.func.avg(Review.rating).label('avg_r'),
+            db.func.count(Review.id).label('cnt'),
+        ).filter(
+            Review.doctor_id.in_(doctor_ids)
+        ).group_by(Review.doctor_id).all()
+
+        stats = {r.doctor_id: (round(float(r.avg_r), 1), r.cnt) for r in rows}
+
+        for doc_id in doctor_ids:
+            doc = db.session.get(cls, doc_id)
+            if doc:
+                avg, cnt = stats.get(doc_id, (0.0, 0))
+                doc._avg_rating = avg
+                doc._review_count = cnt
 
     @property
     def verification_status(self):

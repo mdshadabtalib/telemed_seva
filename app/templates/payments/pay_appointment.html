@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <div style="max-width:600px; margin:0 auto;">
+    <h1 class="mb-6">Pay for Appointment</h1>
+
+    <div class="card mb-6">
+      <div class="card-body">
+        <h3 class="mb-4">Appointment Summary</h3>
+        <div class="flex-between mb-2">
+          <span class="text-muted">Doctor:</span>
+          <strong>Dr. {{ appointment.doctor.full_name }}</strong>
+        </div>
+        <div class="flex-between mb-2">
+          <span class="text-muted">Specialty:</span>
+          <span>{{ appointment.doctor.specialty.name if appointment.doctor.specialty else 'General' }}</span>
+        </div>
+        <div class="flex-between mb-2">
+          <span class="text-muted">Date & Time:</span>
+          <span>{{ appointment.appointment_date.strftime('%d %b %Y') }} at {{ appointment.start_time.strftime('%I:%M %p') }}</span>
+        </div>
+        <div class="flex-between mb-4">
+          <span class="text-muted">Duration:</span>
+          <span>{{ appointment.doctor.consultation_duration }} mins</span>
+        </div>
+
+        <div style="border-top:2px solid var(--gray-200); padding-top:var(--space-4); margin-top:var(--space-4);">
+          <div class="flex-between">
+            <span style="font-size:1.1rem; font-weight:700;">Total Payable</span>
+            <span style="font-size:1.5rem; font-weight:800; color:var(--primary-dark);">{{ currency }}{{ appointment.consultation_fee }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <h3 class="mb-4">Payment Method</h3>
+        <form method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          
+          <div class="p-4 mb-4" style="background:var(--primary-50); border-radius:var(--radius); border:1px solid var(--primary-100);">
+            <div class="flex gap-3" style="align-items:center;">
+              <i class="fas fa-shield-alt text-primary" style="font-size:1.5rem;"></i>
+              <div>
+                <strong>Secure Payment Gateway</strong>
+                <div class="text-sm text-muted">Supports UPI, Debit/Credit Cards, Net Banking & Wallets</div>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg btn-block">
+            <i class="fas fa-lock"></i> Pay {{ currency }}{{ appointment.consultation_fee }} Now
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

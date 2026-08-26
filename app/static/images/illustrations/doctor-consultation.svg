@@ -1,0 +1,45 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="consultGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="90" fill="#F0F4FF" />
+  
+  <!-- Doctor figure -->
+  <g transform="translate(100, 100)">
+    <!-- Head -->
+    <circle cx="0" cy="-30" r="20" fill="#FFE4D6" />
+    
+    <!-- White coat -->
+    <path d="M-25,-10 L-25,40 L-15,50 L15,50 L25,40 L25,-10 Q20,-15 0,-15 Q-20,-15 -25,-10 Z" 
+          fill="white" stroke="#E2E8F0" stroke-width="2"/>
+    
+    <!-- Stethoscope -->
+    <circle cx="10" cy="10" r="4" fill="none" stroke="url(#consultGrad)" stroke-width="2"/>
+    <path d="M10,6 Q0,-5 -8,-5" fill="none" stroke="url(#consultGrad)" stroke-width="2"/>
+    
+    <!-- Medical cross badge -->
+    <g transform="translate(-15, 5)">
+      <rect x="-4" y="-1.5" width="8" height="3" fill="#EF4444" rx="0.5"/>
+      <rect x="-1.5" y="-4" width="3" height="8" fill="#EF4444" rx="0.5"/>
+    </g>
+    
+    <!-- Tablet/clipboard -->
+    <rect x="15" y="15" width="20" height="28" rx="2" fill="#E0E7FF" stroke="url(#consultGrad)" stroke-width="1.5"/>
+    <line x1="20" y1="22" x2="30" y2="22" stroke="url(#consultGrad)" stroke-width="1"/>
+    <line x1="20" y1="27" x2="30" y2="27" stroke="url(#consultGrad)" stroke-width="1"/>
+    <line x1="20" y1="32" x2="28" y2="32" stroke="url(#consultGrad)" stroke-width="1"/>
+  </g>
+  
+  <!-- Floating medical icons -->
+  <g opacity="0.3">
+    <circle cx="30" cy="50" r="3" fill="#4F46E5"/>
+    <path d="M160,60 L165,65 L170,55" fill="none" stroke="#10B981" stroke-width="2"/>
+    <circle cx="40" cy="160" r="2" fill="#EF4444"/>
+    <rect x="155" y="140" width="6" height="6" fill="#F59E0B" rx="1"/>
+  </g>
+</svg>

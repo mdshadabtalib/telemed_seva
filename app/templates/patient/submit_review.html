@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container" style="max-width:560px; margin:2.5rem auto;">
+  <div class="card">
+    <div class="card-body">
+      <h2 class="card-title">Rate Your Consultation</h2>
+
+      <div style="background:var(--gray-50); border-radius:var(--radius); padding:1rem; margin-bottom:1.5rem;">
+        <p class="text-sm text-muted" style="margin:0 0 0.25rem;">Appointment with</p>
+        <strong>Dr. {{ appointment.doctor.full_name }}</strong>
+        {% if appointment.doctor.specialty %}
+          <span class="text-muted"> · {{ appointment.doctor.specialty.name }}</span>
+        {% endif %}
+        <p class="text-sm text-muted" style="margin:0.25rem 0 0;">
+          {{ appointment.appointment_date.strftime('%d %B %Y') }}
+        </p>
+      </div>
+
+      <form method="post" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        {# Star rating widget #}
+        <div class="form-group">
+          <label class="form-label">Your Rating <span class="text-danger">*</span></label>
+          <div class="star-rating" style="display:flex; gap:0.5rem; font-size:2rem; margin-bottom:0.25rem;">
+            {% for i in range(1, 6) %}
+            <label style="cursor:pointer; color:var(--gray-300);" data-value="{{ i }}">
+              <input type="radio" name="rating" value="{{ i }}"
+                     style="position:absolute;opacity:0;width:0;"
+                     required>
+              <i class="fas fa-star star-icon" data-value="{{ i }}"></i>
+            </label>
+            {% endfor %}
+          </div>
+          <p class="text-sm text-muted" id="rating-label">Click to rate</p>
+        </div>
+
+        <div class="form-group" style="margin-top:1rem;">
+          <label class="form-label" for="comment">Comment <span class="text-muted">(optional)</span></label>
+          <textarea id="comment" name="comment" class="form-control" rows="4"
+                    placeholder="Share your experience with this doctor..."></textarea>
+        </div>
+
+        <div style="display:flex; gap:0.75rem; margin-top:1.5rem;">
+          <button type="submit" class="btn btn-primary">Submit Review</button>
+          <a href="{{ url_for('appointments.detail', appointment_id=appointment.id) }}"
+             class="btn btn-outline">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const labels = ['Terrible', 'Poor', 'Okay', 'Good', 'Excellent'];
+  const stars = document.querySelectorAll('.star-icon');
+  const ratingLabel = document.getElementById('rating-label');
+  let selectedRating = 0;
+
+  function highlight(upTo) {
+    stars.forEach(s => {
+      s.style.color = parseInt(s.dataset.value) <= upTo
+        ? 'var(--warning)' : 'var(--gray-300)';
+    });
+  }
+
+  stars.forEach(star => {
+    star.addEventListener('mouseover', () => highlight(parseInt(star.dataset.value)));
+    star.addEventListener('mouseleave', () => highlight(selectedRating));
+    star.addEventListener('click', () => {
+      selectedRating = parseInt(star.dataset.value);
+      highlight(selectedRating);
+      ratingLabel.textContent = labels[selectedRating - 1];
+      // tick the radio
+      document.querySelector(`input[name="rating"][value="${selectedRating}"]`).checked = true;
+    });
+  });
+})();
+</script>
+{% endblock %}

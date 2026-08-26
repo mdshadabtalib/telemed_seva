@@ -1,50 +1,317 @@
 {% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+.consultation-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 1rem;
+  height: calc(100vh - 120px);
+  padding: 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.video-panel {
+  background: #0f172a;
+  border-radius: var(--radius);
+  overflow: hidden;
+  position: relative;
+  min-height: 480px;
+}
+.video-panel iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+.video-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #94a3b8;
+  text-align: center;
+  padding: 2rem;
+}
+.video-placeholder i { font-size: 3rem; margin-bottom: 1rem; color: #475569; }
+.chat-side-panel {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-200);
+  overflow: hidden;
+}
+@media (max-width: 900px) {
+  .consultation-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .video-panel { min-height: 300px; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container">
-  <div class="chat-container">
-    <div class="chat-header">
-      <div>
-        <strong>{% if is_doctor %}Patient: {{ appointment.patient.display_name }}{% else %}Dr. {{ appointment.doctor.full_name }}{% endif %}</strong>
-        <span class="text-sm text-muted" style="margin-left:var(--space-3);">{{ appointment.appointment_date.strftime('%d %b %Y') }} · {{ appointment.start_time.strftime('%I:%M %p') }}</span>
+<div class="consultation-layout">
+
+  {# ── Left: Jitsi video panel ───────────────────────────────────────────── #}
+  <div class="video-panel">
+    {% if appointment.appointment_type.value == 'video' %}
+      <div id="jitsi-container" style="width:100%; height:100%;"></div>
+      <div id="jitsi-loading" class="video-placeholder">
+        <i class="fas fa-circle-notch fa-spin"></i>
+        <p>Starting video call…</p>
+        <p class="text-sm" style="margin-top:0.5rem; color:#64748b;">
+          Please allow camera and microphone access when prompted.
+        </p>
       </div>
-      {% if is_doctor and consultation.status.value != 'completed' %}
-      <button onclick="openModal('complete-modal')" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Complete Consultation</button>
-      {% endif %}
+    {% else %}
+      {# Chat-only consultation #}
+      <div class="video-placeholder">
+        <i class="fas fa-comments"></i>
+        <h3 style="color:#e2e8f0; margin-bottom:0.5rem;">Chat Consultation</h3>
+        <p>This appointment is a text-based consultation.</p>
+        <p style="font-size:0.875rem; color:#64748b;">
+          Use the chat panel on the right to communicate with your
+          {% if is_doctor %}patient{% else %}doctor{% endif %}.
+        </p>
+      </div>
+    {% endif %}
+  </div>
+
+  {# ── Right: Chat panel ─────────────────────────────────────────────────── #}
+  <div class="chat-side-panel">
+    <div class="chat-header" style="padding:0.875rem 1rem; border-bottom:1px solid var(--gray-200); background:var(--gray-50);">
+      <div>
+        <strong style="font-size:0.9rem;">
+          {% if is_doctor %}{{ appointment.patient.display_name }}
+          {% else %}Dr. {{ appointment.doctor.full_name }}{% endif %}
+        </strong>
+        <p class="text-sm text-muted" style="margin:0.1rem 0 0;">
+          {{ appointment.appointment_date.strftime('%d %b %Y') }}
+          · {{ appointment.start_time.strftime('%I:%M %p') }}
+        </p>
+      </div>
+      <div style="display:flex; gap:0.5rem;">
+        <span class="badge badge-{{ 'success' if consultation.status.value == 'in_progress' else 'warning' }}">
+          {{ consultation.status.value | replace('_', ' ') | title }}
+        </span>
+        {% if is_doctor and consultation.status.value != 'completed' %}
+        <button onclick="openModal('complete-modal')" class="btn btn-success btn-sm">
+          <i class="fas fa-check"></i> End
+        </button>
+        {% endif %}
+      </div>
     </div>
-    <div class="chat-messages" id="chat-messages">
+
+    <div class="chat-messages" id="chat-messages" style="flex:1; overflow-y:auto; padding:0.75rem;">
+      {# System join message #}
+      <div style="text-align:center; margin-bottom:0.75rem;">
+        <span style="background:var(--gray-100); padding:0.25rem 0.75rem; border-radius:100px; font-size:0.75rem; color:var(--gray-500);">
+          Consultation started — messages are private and secure
+        </span>
+      </div>
+
       {% for msg in messages %}
-      <div class="chat-message {{ 'sent' if msg.sender_id == current_user.id }}" data-id="{{ msg.id }}">
+      <div class="chat-message {{ 'sent' if msg.sender_id == current_user.id }}"
+           data-id="{{ msg.id }}">
         <div class="chat-bubble">
-          {{ msg.content }}
-          {% if msg.file_url %}<br><a href="{{ msg.file_url }}" target="_blank" style="color:{{ 'rgba(255,255,255,0.9)' if msg.sender_id == current_user.id else 'var(--primary)' }};">📎 {{ msg.file_name or 'File' }}</a>{% endif %}
+          {{ msg.content | e }}
+          {% if msg.file_url %}
+          <br>
+          <a href="{{ msg.file_url }}" target="_blank"
+             style="color:{{ 'rgba(255,255,255,0.9)' if msg.sender_id == current_user.id else 'var(--primary)' }};">
+            📎 {{ msg.file_name or 'File' }}
+          </a>
+          {% endif %}
         </div>
         <div class="chat-time">{{ msg.sent_at.strftime('%I:%M %p') }}</div>
       </div>
       {% endfor %}
     </div>
+
     {% if consultation.status.value != 'completed' %}
-    <div class="chat-input-area">
-      <form id="chat-form" style="display:flex; gap:var(--space-3); width:100%;">
-        <input type="file" id="chat-file" style="display:none;" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx">
-        <button type="button" class="btn btn-outline btn-icon" onclick="document.getElementById('chat-file').click()"><i class="fas fa-paperclip"></i></button>
-        <input type="text" id="chat-input" placeholder="Type a message..." autocomplete="off">
-        <button type="submit" class="btn btn-primary btn-icon"><i class="fas fa-paper-plane"></i></button>
+    <div class="chat-input-area" style="padding:0.75rem; border-top:1px solid var(--gray-200);">
+      <form id="chat-form" style="display:flex; gap:0.5rem; width:100%; align-items:center;">
+        <input type="file" id="chat-file" style="display:none;"
+               accept=".pdf,.png,.jpg,.jpeg,.doc,.docx">
+        <button type="button" class="btn btn-outline btn-icon btn-sm"
+                title="Attach file"
+                onclick="document.getElementById('chat-file').click()">
+          <i class="fas fa-paperclip"></i>
+        </button>
+        <input type="text" id="chat-input" class="form-control"
+               placeholder="Type a message…" autocomplete="off"
+               style="flex:1; font-size:0.875rem;">
+        <button type="submit" class="btn btn-primary btn-icon btn-sm"
+                title="Send">
+          <i class="fas fa-paper-plane"></i>
+        </button>
       </form>
+      <div id="file-preview" style="display:none; margin-top:0.4rem; font-size:0.8rem; color:var(--gray-500);">
+        <i class="fas fa-paperclip"></i> <span id="file-name"></span>
+        <button type="button" onclick="clearFile()" style="background:none;border:none;cursor:pointer;color:var(--danger);margin-left:4px;">✕</button>
+      </div>
     </div>
     {% else %}
-    <div style="padding:var(--space-4); text-align:center; color:var(--gray-400); border-top:1px solid var(--gray-200);">This consultation has ended.</div>
+    <div style="padding:1rem; text-align:center; color:var(--gray-400); font-size:0.875rem;">
+      This consultation has ended.
+      {% if not is_doctor %}
+        {% if appointment.consultation and not appointment.consultation.prescription %}
+          <p style="margin-top:0.5rem;">
+            <a href="{{ url_for('prescriptions.my_prescriptions') }}">View Prescriptions</a>
+          </p>
+        {% endif %}
+      {% endif %}
+    </div>
     {% endif %}
   </div>
 </div>
-<!-- Complete Modal -->
+
+{# ── Complete consultation modal (doctor only) ─────────────────────────── #}
 {% if is_doctor %}
-<div class="modal-overlay" id="complete-modal"><div class="modal"><div class="modal-header"><h3>Complete Consultation</h3><button class="modal-close" onclick="closeModal('complete-modal')">&times;</button></div>
-<form method="POST" action="{{ url_for('consultation.complete', consultation_id=consultation.id) }}"><div class="modal-body"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-<div class="form-group"><label class="form-label">Diagnosis</label><textarea name="diagnosis" class="form-control" required rows="3" placeholder="Primary diagnosis..."></textarea></div>
-<div class="form-group"><label class="form-label">Clinical Notes</label><textarea name="notes" class="form-control" rows="3" placeholder="Additional clinical notes..."></textarea></div>
-</div><div class="modal-footer"><button type="button" class="btn btn-outline" onclick="closeModal('complete-modal')">Cancel</button><button type="submit" class="btn btn-success">Complete & Create Prescription</button></div></form></div></div>
+<div class="modal-overlay" id="complete-modal">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-header">
+      <h3>Complete Consultation</h3>
+      <button class="modal-close" onclick="closeModal('complete-modal')">&times;</button>
+    </div>
+    <form method="POST"
+          action="{{ url_for('consultation.complete', consultation_id=consultation.id) }}">
+      <div class="modal-body" style="display:flex; flex-direction:column; gap:1rem;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+          <label class="form-label">Primary Diagnosis <span class="text-danger">*</span></label>
+          <textarea name="diagnosis" class="form-control" required rows="3"
+                    placeholder="Enter the primary diagnosis…"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Clinical Notes</label>
+          <textarea name="notes" class="form-control" rows="3"
+                    placeholder="Additional notes, observations…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline"
+                onclick="closeModal('complete-modal')">Cancel</button>
+        <button type="submit" class="btn btn-success">
+          <i class="fas fa-check"></i> Complete &amp; Write Prescription
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
 {% endif %}
 {% endblock %}
+
 {% block extra_js %}
-<script>initChat({{ consultation.id }}, {{ current_user.id }});</script>
+<script>
+  // ── Chat ───────────────────────────────────────────────────────────────────
+  initChat({{ consultation.id }}, {{ current_user.id }});
+
+  // File preview
+  document.getElementById('chat-file').addEventListener('change', function () {
+    const preview = document.getElementById('file-preview');
+    const nameEl  = document.getElementById('file-name');
+    if (this.files.length) {
+      nameEl.textContent = this.files[0].name;
+      preview.style.display = 'block';
+    }
+  });
+  function clearFile() {
+    document.getElementById('chat-file').value = '';
+    document.getElementById('file-preview').style.display = 'none';
+  }
+
+  {% if appointment.appointment_type.value == 'video' %}
+  // ── Jitsi Meet integration ─────────────────────────────────────────────────
+  // We load the Jitsi External API from meet.jit.si and embed the call
+  // directly in the page. The room name is derived from the consultation's
+  // unique room_id so each consultation gets its own private room.
+  //
+  // For production you should:
+  //  1. Run your own Jitsi instance, OR
+  //  2. Use a paid Jitsi-as-a-Service / 8x8.vc with JWT auth tokens
+  //     to prevent uninvited guests from joining.
+  //
+  // The room_id stored in the Consultation model is used as the Jitsi
+  // room name — it is a random 16-char hex string, which is sufficiently
+  // hard to guess but NOT protected by a password/JWT in this free-tier setup.
+
+  const ROOM_ID  = '{{ consultation.room_id or ("telemedseva-" + consultation.id|string) }}';
+  const DOMAIN   = 'meet.jit.si';
+  const DISPLAY_NAME = '{{ current_user.display_name | e }}';
+  const IS_DOCTOR    = {{ 'true' if is_doctor else 'false' }};
+
+  function loadJitsi() {
+    const script = document.createElement('script');
+    script.src = 'https://meet.jit.si/external_api.js';
+    script.onload = function () {
+      const container = document.getElementById('jitsi-container');
+      const loading   = document.getElementById('jitsi-loading');
+
+      const options = {
+        roomName: 'telemedseva-' + ROOM_ID,
+        parentNode: container,
+        width: '100%',
+        height: '100%',
+        userInfo: { displayName: DISPLAY_NAME },
+        configOverwrite: {
+          startWithAudioMuted: false,
+          startWithVideoMuted: false,
+          disableDeepLinking: true,
+          prejoinPageEnabled: false,
+          // Minimal toolbar for clinical setting
+          toolbarButtons: [
+            'microphone', 'camera', 'desktop', 'fullscreen',
+            'fodeviceselection', 'hangup', 'chat', 'tileview',
+          ],
+        },
+        interfaceConfigOverwrite: {
+          SHOW_JITSI_WATERMARK: false,
+          SHOW_WATERMARK_FOR_GUESTS: false,
+          SHOW_BRAND_WATERMARK: false,
+          DEFAULT_BACKGROUND: '#0f172a',
+          MOBILE_APP_PROMO: false,
+        },
+      };
+
+      loading.style.display = 'none';
+      const api = new JitsiMeetExternalAPI(DOMAIN, options);
+
+      // Auto-complete on hangup if doctor
+      api.addEventListener('videoConferenceLeft', function () {
+        if (IS_DOCTOR) {
+          // Prompt doctor to complete the consultation
+          openModal('complete-modal');
+        }
+      });
+    };
+
+    script.onerror = function () {
+      const loading = document.getElementById('jitsi-loading');
+      loading.innerHTML = `
+        <i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i>
+        <h3 style="color:#e2e8f0; margin-bottom:0.5rem;">Could not load video</h3>
+        <p style="color:#94a3b8;">Check your internet connection and ensure
+        pop-up blockers are not preventing the call from starting.</p>
+        <button onclick="loadJitsi()" class="btn btn-primary" style="margin-top:1rem;">
+          Retry
+        </button>`;
+    };
+
+    document.head.appendChild(script);
+  }
+
+  // Start Jitsi only when consultation is in progress (doctor has joined)
+  {% if consultation.status.value in ('in_progress', 'waiting') %}
+    loadJitsi();
+  {% else %}
+    document.getElementById('jitsi-loading').innerHTML = `
+      <i class="fas fa-clock" style="color:#64748b;"></i>
+      <p style="color:#94a3b8; margin-top:1rem;">Consultation has ended.</p>`;
+  {% endif %}
+  {% endif %}
+</script>
 {% endblock %}

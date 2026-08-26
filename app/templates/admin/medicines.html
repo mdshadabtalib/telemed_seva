@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <div class="flex-between mb-6">
+    <div>
+      <h1>Pharmacy Catalog & Inventory</h1>
+      <p class="text-muted mb-0">Manage medications, stock levels, and pricing.</p>
+    </div>
+    <a href="{{ url_for('admin.add_medicine') }}" class="btn btn-primary btn-sm">
+      <i class="fas fa-plus"></i> Add New Medicine
+    </a>
+  </div>
+
+  {% if medicines.items %}
+  <div class="table-responsive">
+    <table>
+      <thead>
+        <tr>
+          <th>Medicine</th>
+          <th>Category</th>
+          <th>Dosage Form</th>
+          <th>Price</th>
+          <th>Stock</th>
+          <th>Rx Req</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for med in medicines.items %}
+        <tr>
+          <td>
+            <strong>{{ med.name }}</strong>
+            <div class="text-sm text-muted">{{ med.generic_name or '' }} · {{ med.strength or '' }}</div>
+          </td>
+          <td>{{ med.category.name if med.category else 'Uncategorized' }}</td>
+          <td><span class="badge badge-secondary">{{ med.dosage_form.value|title }}</span></td>
+          <td>
+            {% if med.discount_percent > 0 %}
+            <span class="text-sm" style="text-decoration:line-through; color:var(--gray-400);">{{ currency }}{{ med.price }}</span>
+            {% endif %}
+            <strong>{{ currency }}{{ med.selling_price }}</strong>
+          </td>
+          <td>
+            {% if med.inventory %}
+              <span class="badge badge-{{ 'danger' if med.inventory.stock_quantity == 0 else 'warning' if med.inventory.is_low_stock else 'success' }}">
+                {{ med.inventory.stock_quantity }} in stock
+              </span>
+            {% else %}
+              <span class="badge badge-danger">No inventory</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if med.requires_prescription %}
+              <span class="badge badge-warning"><i class="fas fa-prescription"></i> Yes</span>
+            {% else %}
+              <span class="badge badge-secondary">No</span>
+            {% endif %}
+          </td>
+          <td>
+            <span class="badge badge-{{ 'success' if med.is_active else 'danger' }}">
+              {{ 'Active' if med.is_active else 'Inactive' }}
+            </span>
+          </td>
+          <td>
+            <a href="{{ url_for('admin.edit_medicine', med_id=med.id) }}" class="btn btn-outline btn-sm">
+              <i class="fas fa-edit"></i> Edit
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon"><i class="fas fa-capsules"></i></div>
+    <h3>No medicines listed</h3>
+    <p>Add your first medicine to the online pharmacy catalog.</p>
+    <a href="{{ url_for('admin.add_medicine') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Add Medicine</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

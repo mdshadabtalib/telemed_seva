@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <h1 class="mb-6">My Reviews</h1>
+
+  {% if reviews %}
+  <div class="grid grid-1" style="gap:1rem;">
+    {% for review in reviews %}
+    <div class="card">
+      <div class="card-body">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.5rem;">
+          <div>
+            <strong>Dr. {{ review.doctor.full_name }}</strong>
+            {% if review.doctor.specialty %}
+              <span class="badge badge-info" style="margin-left:0.5rem; font-size:0.75rem;">
+                {{ review.doctor.specialty.name }}
+              </span>
+            {% endif %}
+          </div>
+          <div style="color:var(--warning); font-size:1.1rem;">
+            {% for i in range(review.rating) %}&#9733;{% endfor %}
+            {% for i in range(5 - review.rating) %}<span style="color:var(--gray-300);">&#9733;</span>{% endfor %}
+            <span class="text-sm text-muted" style="margin-left:0.5rem;">{{ review.rating }}/5</span>
+          </div>
+        </div>
+        {% if review.comment %}
+        <p style="margin:0.75rem 0 0; color:var(--gray-700);">{{ review.comment }}</p>
+        {% endif %}
+        <p class="text-sm text-muted" style="margin:0.5rem 0 0;">
+          {{ review.created_at.strftime('%d %b %Y') }}
+        </p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon"><i class="fas fa-star"></i></div>
+    <h3>No reviews yet</h3>
+    <p class="text-muted">After completing a consultation you can rate your doctor.</p>
+    <a href="{{ url_for('appointments.my_appointments') }}" class="btn btn-primary">
+      View Appointments
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

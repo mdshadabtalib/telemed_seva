@@ -1,0 +1,73 @@
+version: "3.9"
+
+# ── TeleMed Seva — Docker Compose (Development + Production) ──────────────────
+#
+# Development:  docker compose up
+# Production:   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# First-time setup:
+#   docker compose run --rm web flask db upgrade
+#   docker compose run --rm web flask seed-db
+#   docker compose run --rm web flask create-admin
+
+services:
+
+  # ── PostgreSQL ───────────────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-telemed_seva}
+      POSTGRES_USER: ${POSTGRES_USER:-telemed}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-telemed}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"   # remove in production
+
+  # ── Redis ────────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "6379:6379"   # remove in production
+
+  # ── Flask / Gunicorn application ─────────────────────────────────────────────
+  web:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-telemed}:${POSTGRES_PASSWORD:-changeme}@db:5432/${POSTGRES_DB:-telemed_seva}
+      REDIS_URL: redis://redis:6379/0
+      FLASK_ENV: ${FLASK_ENV:-development}
+    volumes:
+      # Mount uploads and logs as named volumes for persistence
+      - uploads_data:/app/uploads
+      - logs_data:/app/logs
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
+  uploads_data:
+  logs_data:

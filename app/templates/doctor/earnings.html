@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <h1 class="mb-6">My Earnings</h1>
+
+  {# Summary cards #}
+  <div class="grid grid-3 mb-8" style="gap:1rem;">
+    <div class="card">
+      <div class="card-body" style="text-align:center;">
+        <p class="text-sm text-muted" style="margin-bottom:0.25rem;">Total Earned</p>
+        <h2 style="color:var(--success); margin:0;">{{ currency }}{{ "%.2f"|format(total_earned) }}</h2>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body" style="text-align:center;">
+        <p class="text-sm text-muted" style="margin-bottom:0.25rem;">Consultations Completed</p>
+        <h2 style="margin:0;">{{ completed_count }}</h2>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body" style="text-align:center;">
+        <p class="text-sm text-muted" style="margin-bottom:0.25rem;">Consultation Fee</p>
+        <h2 style="margin:0;">{{ currency }}{{ profile.consultation_fee }}</h2>
+      </div>
+    </div>
+  </div>
+
+  {# Monthly breakdown #}
+  {% if monthly_breakdown %}
+  <div class="card mb-8">
+    <div class="card-body">
+      <h3 style="margin-bottom:1rem;">Monthly Earnings</h3>
+      <div class="table-responsive">
+        <table>
+          <thead><tr><th>Month</th><th>Earnings</th></tr></thead>
+          <tbody>
+            {% for month, amount in monthly_breakdown.items() %}
+            <tr>
+              <td>{{ month }}</td>
+              <td><strong>{{ currency }}{{ "%.2f"|format(amount) }}</strong></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {# Payment transactions #}
+  <div class="card">
+    <div class="card-body">
+      <h3 style="margin-bottom:1rem;">Payment Transactions</h3>
+      {% if payments.items %}
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Reference</th>
+              <th>Amount</th>
+              <th>Method</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in payments.items %}
+            <tr>
+              <td class="text-sm">{{ p.payment_ref }}</td>
+              <td><strong>{{ currency }}{{ p.amount }}</strong></td>
+              <td>
+                <span class="badge badge-info">{{ p.method.value | title }}</span>
+              </td>
+              <td class="text-sm text-muted">{{ p.created_at.strftime('%d %b %Y') }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if payments.pages > 1 %}
+      <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+        {% for page in payments.iter_pages() %}
+          {% if page %}
+            <a href="?page={{ page }}"
+               class="btn btn-sm {{ 'btn-primary' if page == payments.page else 'btn-outline' }}">
+              {{ page }}
+            </a>
+          {% endif %}
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% else %}
+      <div class="empty-state" style="padding:2rem 0;">
+        <div class="empty-icon"><i class="fas fa-wallet"></i></div>
+        <h3>No payments yet</h3>
+        <p class="text-muted">Payments appear here after consultations are completed.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

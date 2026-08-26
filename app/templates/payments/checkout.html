@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <div style="max-width:600px; margin:0 auto;">
+    <h1 class="mb-6">Payment Checkout</h1>
+
+    <div class="card mb-6">
+      <div class="card-body text-center" style="padding:var(--space-8);">
+        <div style="width:64px; height:64px; background:var(--primary-100); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto var(--space-4); color:var(--primary); font-size:1.75rem;">
+          <i class="fas fa-shield-alt"></i>
+        </div>
+
+        <h2>Completing Transaction</h2>
+        <p class="text-muted">Payment Reference: <code>{{ payment.payment_ref }}</code></p>
+        <div style="font-size:2rem; font-weight:800; color:var(--primary-dark); margin:var(--space-4) 0;">
+          {{ currency }}{{ payment.amount }}
+        </div>
+
+        {% if provider_data.get('provider') == 'mock' %}
+        <div class="alert alert-info" style="text-align:left;">
+          <strong><i class="fas fa-flask"></i> Sandbox Environment:</strong> Simulated payment processing. Click below to verify and complete.
+        </div>
+        <form method="POST" action="{{ url_for('payments.verify') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="payment_id" value="{{ payment.id }}">
+          <input type="hidden" name="provider_payment_id" value="mock_pay_{{ payment.id }}">
+          <button type="submit" class="btn btn-success btn-lg btn-block mt-4">
+            <i class="fas fa-check-circle"></i> Complete Mock Payment
+          </button>
+        </form>
+        {% else %}
+        <p>Please follow your payment gateway prompt...</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,5 +1,5 @@
-"""Patient routes — dashboard, profile, medical records, addresses."""
-from flask import render_template, redirect, url_for, flash, request
+"""Patient routes — dashboard, profile, medical records, addresses, reviews, support."""
+from flask import render_template, redirect, url_for, flash, request, abort
 from flask_login import current_user, login_required
 
 from . import patient_bp
@@ -11,8 +11,13 @@ from ..models.medical_record import MedicalRecord, RecordType
 from ..models.order import Order
 from ..models.notification import Notification
 from ..models.address import Address
+from ..models.review import Review
+from ..models.support import SupportTicket, TicketPriority
 from ..utils.decorators import role_required
 from ..utils.helpers import save_upload, paginate_query
+from ..utils.forms import PatientProfileForm, AddressForm, SupportTicketForm
+from ..services.notification_service import notify
+from ..models.notification import NotificationType
 
 
 @patient_bp.route('/dashboard')
@@ -45,42 +50,37 @@ def dashboard():
 @patient_bp.route('/profile', methods=['GET', 'POST'])
 @role_required(UserRole.PATIENT)
 def profile():
-    profile = current_user.patient_profile
-    if request.method == 'POST':
-        profile.first_name = request.form.get('first_name', '').strip()
-        profile.last_name = request.form.get('last_name', '').strip()
-        profile.phone = request.form.get('phone', '').strip()
-        dob = request.form.get('date_of_birth')
-        if dob:
-            from datetime import datetime
-            try:
-                profile.date_of_birth = datetime.strptime(dob, '%Y-%m-%d').date()
-            except ValueError:
-                pass
-        gender = request.form.get('gender')
-        if gender:
-            try:
-                profile.gender = Gender(gender)
-            except ValueError:
-                pass
-        bg = request.form.get('blood_group')
-        if bg:
-            try:
-                profile.blood_group = BloodGroup(bg)
-            except ValueError:
-                pass
-        profile.allergies = request.form.get('allergies', '').strip()
-        profile.medical_history = request.form.get('medical_history', '').strip()
-        profile.emergency_contact_name = request.form.get('emergency_contact_name', '').strip()
-        profile.emergency_contact_phone = request.form.get('emergency_contact_phone', '').strip()
+    patient_profile = current_user.patient_profile
+    form = PatientProfileForm(obj=patient_profile)
 
-        # Avatar upload
-        avatar = request.files.get('avatar')
-        if avatar and avatar.filename:
-            filename = save_upload(avatar, 'avatars',
+    if form.validate_on_submit():
+        patient_profile.first_name = form.first_name.data.strip()
+        patient_profile.last_name  = form.last_name.data.strip()
+        patient_profile.phone      = form.phone.data.strip() if form.phone.data else None
+        patient_profile.date_of_birth = form.date_of_birth.data
+
+        if form.gender.data:
+            try:
+                patient_profile.gender = Gender(form.gender.data)
+            except ValueError:
+                pass
+
+        if form.blood_group.data:
+            try:
+                patient_profile.blood_group = BloodGroup(form.blood_group.data)
+            except ValueError:
+                pass
+
+        patient_profile.allergies                = form.allergies.data.strip()
+        patient_profile.medical_history          = form.medical_history.data.strip()
+        patient_profile.emergency_contact_name   = form.emergency_contact_name.data.strip()
+        patient_profile.emergency_contact_phone  = form.emergency_contact_phone.data.strip()
+
+        if form.avatar.data:
+            filename = save_upload(form.avatar.data, 'avatars',
                                    allowed_extensions={'png', 'jpg', 'jpeg', 'webp'})
             if filename:
-                profile.avatar = filename
+                patient_profile.avatar = filename
 
         db.session.commit()
         flash('Profile updated successfully.', 'success')
@@ -89,7 +89,8 @@ def profile():
     return render_template(
         'patient/profile.html',
         title='My Profile',
-        profile=profile,
+        profile=patient_profile,
+        form=form,
         genders=Gender,
         blood_groups=BloodGroup,
     )
@@ -149,27 +150,35 @@ def upload_record():
 @role_required(UserRole.PATIENT)
 def addresses():
     addrs = Address.query.filter_by(user_id=current_user.id).all()
-    return render_template('patient/addresses.html', title='My Addresses', addresses=addrs)
+    form = AddressForm()
+    return render_template('patient/addresses.html', title='My Addresses',
+                           addresses=addrs, form=form)
 
 
 @patient_bp.route('/addresses/add', methods=['POST'])
 @role_required(UserRole.PATIENT)
 def add_address():
-    addr = Address(
-        user_id=current_user.id,
-        label=request.form.get('label', 'Home'),
-        full_name=request.form.get('full_name', '').strip(),
-        phone=request.form.get('phone', '').strip(),
-        line1=request.form.get('line1', '').strip(),
-        line2=request.form.get('line2', '').strip(),
-        city=request.form.get('city', '').strip(),
-        state=request.form.get('state', '').strip(),
-        pincode=request.form.get('pincode', '').strip(),
-        is_default=not Address.query.filter_by(user_id=current_user.id).first(),
-    )
-    db.session.add(addr)
-    db.session.commit()
-    flash('Address added.', 'success')
+    form = AddressForm()
+    if form.validate_on_submit():
+        addr = Address(
+            user_id=current_user.id,
+            label=form.label.data,
+            full_name=form.full_name.data.strip(),
+            phone=form.phone.data.strip(),
+            line1=form.line1.data.strip(),
+            line2=form.line2.data.strip() if form.line2.data else '',
+            city=form.city.data.strip(),
+            state=form.state.data.strip(),
+            pincode=form.pincode.data.strip(),
+            is_default=not Address.query.filter_by(user_id=current_user.id).first(),
+        )
+        db.session.add(addr)
+        db.session.commit()
+        flash('Address added.', 'success')
+    else:
+        for field, errs in form.errors.items():
+            for e in errs:
+                flash(f'{field}: {e}', 'danger')
     return redirect(url_for('patient.addresses'))
 
 
@@ -181,3 +190,119 @@ def delete_address(addr_id):
     db.session.commit()
     flash('Address deleted.', 'info')
     return redirect(url_for('patient.addresses'))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Reviews
+# ─────────────────────────────────────────────────────────────────────────────
+
+@patient_bp.route('/appointments/<int:appointment_id>/review', methods=['GET', 'POST'])
+@role_required(UserRole.PATIENT)
+def submit_review(appointment_id):
+    """Submit a rating + comment for a completed consultation."""
+    appointment = Appointment.query.get_or_404(appointment_id)
+
+    # Must be this patient's appointment
+    if appointment.patient_id != current_user.id:
+        abort(403)
+
+    # Only completable after the appointment is done
+    if appointment.status != AppointmentStatus.COMPLETED:
+        flash('You can only review a completed appointment.', 'warning')
+        return redirect(url_for('appointments.detail', appointment_id=appointment_id))
+
+    # One review per appointment
+    existing = Review.query.filter_by(appointment_id=appointment_id).first()
+    if existing:
+        flash('You have already reviewed this consultation.', 'info')
+        return redirect(url_for('doctor.public_profile',
+                                doctor_id=appointment.doctor_id))
+
+    if request.method == 'POST':
+        try:
+            rating = int(request.form.get('rating', 0))
+        except (ValueError, TypeError):
+            rating = 0
+
+        if rating < 1 or rating > 5:
+            flash('Please select a rating between 1 and 5.', 'danger')
+            return redirect(url_for('patient.submit_review',
+                                    appointment_id=appointment_id))
+
+        comment = request.form.get('comment', '').strip()
+
+        review = Review(
+            patient_id=current_user.id,
+            doctor_id=appointment.doctor_id,
+            appointment_id=appointment_id,
+            rating=rating,
+            comment=comment,
+        )
+        db.session.add(review)
+
+        # Notify the doctor
+        notify(
+            appointment.doctor.user_id,
+            NotificationType.REVIEW_RECEIVED,
+            'New Review',
+            f'{current_user.display_name} left a {rating}★ review.',
+            link=f'/doctor/view/{appointment.doctor_id}',
+        )
+
+        db.session.commit()
+        flash('Thank you! Your review has been submitted.', 'success')
+        return redirect(url_for('doctor.public_profile',
+                                doctor_id=appointment.doctor_id))
+
+    return render_template(
+        'patient/submit_review.html',
+        title='Rate Your Consultation',
+        appointment=appointment,
+    )
+
+
+@patient_bp.route('/reviews')
+@role_required(UserRole.PATIENT)
+def my_reviews():
+    """List all reviews the patient has submitted."""
+    reviews = Review.query.filter_by(patient_id=current_user.id)\
+        .order_by(Review.created_at.desc()).all()
+    return render_template('patient/my_reviews.html',
+                           title='My Reviews', reviews=reviews)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Support Tickets
+# ─────────────────────────────────────────────────────────────────────────────
+
+@patient_bp.route('/support', methods=['GET', 'POST'])
+@role_required(UserRole.PATIENT)
+def support():
+    """Create a new support ticket or list existing ones."""
+    form = SupportTicketForm()
+    if form.validate_on_submit():
+        try:
+            priority = TicketPriority(form.priority.data)
+        except ValueError:
+            priority = TicketPriority.MEDIUM
+
+        ticket = SupportTicket(
+            user_id=current_user.id,
+            subject=form.subject.data.strip(),
+            description=form.description.data.strip(),
+            priority=priority,
+        )
+        db.session.add(ticket)
+        db.session.commit()
+        flash('Support ticket submitted. Our team will respond shortly.', 'success')
+        return redirect(url_for('patient.support'))
+
+    tickets = paginate_query(
+        SupportTicket.query.filter_by(user_id=current_user.id)
+        .order_by(SupportTicket.created_at.desc()),
+        per_page=15,
+    )
+    return render_template('patient/support.html',
+                           title='Support', tickets=tickets,
+                           form=form, priorities=TicketPriority)
+

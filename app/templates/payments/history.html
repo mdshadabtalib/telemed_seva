@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <div class="flex-between mb-6">
+    <div>
+      <h1>Payment History</h1>
+      <p class="text-muted mb-0">Record of all transactions and payments made.</p>
+    </div>
+  </div>
+
+  {% if payments.items %}
+  <div class="table-responsive">
+    <table>
+      <thead>
+        <tr>
+          <th>Reference #</th>
+          <th>Type</th>
+          <th>Amount</th>
+          <th>Date</th>
+          <th>Provider</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in payments.items %}
+        <tr>
+          <td><code>{{ p.payment_ref }}</code></td>
+          <td><span class="badge badge-info">{{ p.payment_type.value|title }}</span></td>
+          <td><strong>{{ currency }}{{ p.amount }}</strong></td>
+          <td>{{ p.created_at.strftime('%d %b %Y, %I:%M %p') }}</td>
+          <td>{{ p.provider|upper }}</td>
+          <td>
+            <span class="badge badge-{{ 'success' if p.status.value == 'completed' else 'warning' if p.status.value == 'pending' else 'danger' }}">
+              {{ p.status.value|title }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon"><i class="fas fa-receipt"></i></div>
+    <h3>No payments found</h3>
+    <p>You haven't made any payments yet.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

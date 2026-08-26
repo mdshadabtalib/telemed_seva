@@ -9,8 +9,11 @@ from ..extensions import db
 from ..models.user import UserRole
 from ..models.appointment import Appointment, AppointmentStatus
 from ..models.consultation import Consultation, ConsultationStatus, ConsultationMessage, MessageType
+from ..models.notification import NotificationType
 from ..utils.helpers import save_upload
 from ..utils.security import log_audit
+from ..utils.decorators import verified_doctor_required
+from ..services.notification_service import notify
 
 
 @consultation_bp.route('/room/<int:consultation_id>')
@@ -146,28 +149,84 @@ def get_messages(consultation_id):
     })
 
 
-@consultation_bp.route('/complete/<int:consultation_id>', methods=['POST'])
+@consultation_bp.route('/start/<int:consultation_id>', methods=['POST'])
 @login_required
-def complete(consultation_id):
-    """Complete a consultation (doctor only)."""
+def start_consultation(consultation_id):
+    """Start a consultation (patient can trigger this when they enter the room)."""
     consultation = Consultation.query.get_or_404(consultation_id)
     appointment = consultation.appointment
 
-    if current_user.role != UserRole.DOCTOR or \
-            current_user.doctor_profile.id != appointment.doctor_id:
+    # Authorization: only patient or doctor can start
+    is_patient = current_user.id == appointment.patient_id
+    is_doctor = (current_user.role == UserRole.DOCTOR and
+                 current_user.doctor_profile and
+                 current_user.doctor_profile.id == appointment.doctor_id)
+
+    if not is_patient and not is_doctor:
         abort(403)
 
+    if consultation.status == ConsultationStatus.WAITING:
+        consultation.start()
+        db.session.commit()
+        
+        # Notify the other party
+        if is_patient:
+            notify(
+                appointment.doctor.user_id,
+                NotificationType.APPOINTMENT_BOOKED,
+                'Patient Joined',
+                f'{appointment.patient.display_name} has joined the consultation room.',
+                url_for('consultation.room', consultation_id=consultation.id)
+            )
+        else:
+            notify(
+                appointment.patient_id,
+                NotificationType.APPOINTMENT_BOOKED,
+                'Doctor Joined',
+                f'Dr. {appointment.doctor.full_name} has joined the consultation.',
+                url_for('consultation.room', consultation_id=consultation.id)
+            )
+
+    return jsonify({'status': 'success', 'consultation_status': consultation.status.value})
+
+
+@consultation_bp.route('/complete/<int:consultation_id>', methods=['POST'])
+@verified_doctor_required
+def complete(consultation_id):
+    """Complete a consultation (verified doctor only)."""
+    consultation = Consultation.query.get_or_404(consultation_id)
+    appointment = consultation.appointment
+
+    # Verify this is the correct doctor
+    if current_user.doctor_profile.id != appointment.doctor_id:
+        abort(403)
+
+    # Validate diagnosis is provided
+    diagnosis = request.form.get('diagnosis', '').strip()
+    if not diagnosis:
+        flash('Diagnosis is required to complete the consultation.', 'danger')
+        return redirect(url_for('consultation.room', consultation_id=consultation.id))
+
     # Save diagnosis and notes
-    consultation.diagnosis = request.form.get('diagnosis', '').strip()
+    consultation.diagnosis = diagnosis
     consultation.notes = request.form.get('notes', '').strip()
     consultation.complete()
 
     # Complete the appointment
     appointment.transition_to(AppointmentStatus.COMPLETED)
 
+    # Notify patient
+    notify(
+        appointment.patient_id,
+        NotificationType.APPOINTMENT_COMPLETED,
+        'Consultation Completed',
+        f'Your consultation with Dr. {appointment.doctor.full_name} has been completed.',
+        url_for('appointments.detail', appointment_id=appointment.id)
+    )
+
     log_audit(
         current_user.id, 'complete_consultation', 'consultation',
-        consultation.id, f'Appointment {appointment.id} completed.'
+        consultation.id, f'Appointment {appointment.id} completed with diagnosis.'
     )
     db.session.commit()
 

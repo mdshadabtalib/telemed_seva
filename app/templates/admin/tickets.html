@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <div class="flex-between mb-6">
+    <div>
+      <h1>Support Tickets</h1>
+      <p class="text-muted mb-0">Resolve inquiries and issues from platform users.</p>
+    </div>
+    <div class="flex gap-2">
+      {% for st in statuses %}
+      <a href="?status={{ st.value }}" class="btn {{ 'btn-primary' if request.args.get('status', 'open') == st.value else 'btn-outline' }} btn-sm">
+        {{ st.value|title }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if tickets.items %}
+  <div class="table-responsive">
+    <table>
+      <thead>
+        <tr>
+          <th>Ticket #</th>
+          <th>User</th>
+          <th>Subject</th>
+          <th>Priority</th>
+          <th>Created</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in tickets.items %}
+        <tr>
+          <td><strong>{{ t.ticket_number }}</strong></td>
+          <td>{{ t.user.display_name }} ({{ t.user.email }})</td>
+          <td>
+            <strong>{{ t.subject }}</strong>
+            <div class="text-sm text-muted">{{ t.description|truncate(80) }}</div>
+          </td>
+          <td>
+            <span class="badge badge-{{ 'danger' if t.priority.value == 'urgent' else 'warning' if t.priority.value == 'high' else 'info' }}">
+              {{ t.priority.value|title }}
+            </span>
+          </td>
+          <td>{{ t.created_at.strftime('%d %b %Y') }}</td>
+          <td>
+            <span class="badge badge-{{ 'success' if t.status.value == 'resolved' else 'warning' if t.status.value == 'in_progress' else 'danger' }}">
+              {{ t.status.value|replace('_',' ')|title }}
+            </span>
+          </td>
+          <td>
+            {% if t.status.value != 'resolved' %}
+            <button onclick="openResolveModal({{ t.id }})" class="btn btn-outline btn-sm text-success">
+              <i class="fas fa-check"></i> Resolve
+            </button>
+            {% else %}
+            <span class="text-sm text-muted">Resolved</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon"><i class="fas fa-ticket-alt"></i></div>
+    <h3>No tickets found</h3>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Resolve Ticket Modal -->
+<div class="modal-overlay" id="ticket-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Resolve Support Ticket</h3>
+      <button class="modal-close" onclick="closeModal('ticket-modal')">&times;</button>
+    </div>
+    <form method="POST" id="ticket-resolve-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Resolution Notes *</label>
+          <textarea name="resolution" class="form-control" rows="4" required placeholder="Explain how this issue was resolved..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('ticket-modal')">Cancel</button>
+        <button type="submit" class="btn btn-success">Mark Resolved</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function openResolveModal(ticketId) {
+  const form = document.getElementById('ticket-resolve-form');
+  form.action = `/admin/tickets/${ticketId}/resolve`;
+  openModal('ticket-modal');
+}
+</script>
+{% endblock %}

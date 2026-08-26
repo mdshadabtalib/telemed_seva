@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <div class="flex-between mb-6">
+    <div>
+      <h1>Admin Dashboard</h1>
+      <p class="text-muted mb-0">Platform overview, system stats, and administrative controls.</p>
+    </div>
+    <div class="flex gap-2">
+      <a href="{{ url_for('admin.verifications') }}" class="btn btn-outline btn-sm">
+        <i class="fas fa-user-check"></i> Verifications
+      </a>
+      <a href="{{ url_for('admin.medicines') }}" class="btn btn-primary btn-sm">
+        <i class="fas fa-capsules"></i> Manage Medicines
+      </a>
+    </div>
+  </div>
+
+  <!-- Key Performance Indicators -->
+  <div class="grid grid-4 mb-8">
+    <div class="stat-card">
+      <div class="stat-icon primary"><i class="fas fa-users"></i></div>
+      <div>
+        <div class="stat-value">{{ stats.total_patients }}</div>
+        <div class="stat-label">Total Patients</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon info"><i class="fas fa-user-md"></i></div>
+      <div>
+        <div class="stat-value">{{ stats.total_doctors }}</div>
+        <div class="stat-label">Registered Doctors</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon warning"><i class="fas fa-id-card"></i></div>
+      <div>
+        <div class="stat-value">{{ stats.pending_verifications }}</div>
+        <div class="stat-label">Pending Verifications</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon success"><i class="fas fa-indian-rupee-sign"></i></div>
+      <div>
+        <div class="stat-value">{{ currency }}{{ "%.2f"|format(stats.total_revenue|default(0)) }}</div>
+        <div class="stat-label">Total Revenue</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-4 mb-8">
+    <div class="stat-card">
+      <div class="stat-icon primary"><i class="fas fa-calendar-check"></i></div>
+      <div>
+        <div class="stat-value">{{ stats.total_appointments }}</div>
+        <div class="stat-label">Total Appointments</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon info"><i class="fas fa-clock"></i></div>
+      <div>
+        <div class="stat-value">{{ stats.active_appointments }}</div>
+        <div class="stat-label">Active / Upcoming</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon warning"><i class="fas fa-box-open"></i></div>
+      <div>
+        <div class="stat-value">{{ stats.pending_orders }}</div>
+        <div class="stat-label">Orders in Pipeline</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon danger"><i class="fas fa-ticket-alt"></i></div>
+      <div>
+        <div class="stat-value">{{ stats.open_tickets }}</div>
+        <div class="stat-label">Open Support Tickets</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Administrative Sections Navigation -->
+  <div class="grid grid-3">
+    <div class="card">
+      <div class="card-body">
+        <h4><i class="fas fa-user-shield text-primary"></i> Doctor Verification</h4>
+        <p class="text-sm text-muted">Review medical credentials, licenses, and background proofs for pending doctor registrations.</p>
+        <a href="{{ url_for('admin.verifications') }}" class="btn btn-outline-primary btn-sm">Review ({{ stats.pending_verifications }})</a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <h4><i class="fas fa-user-friends text-info"></i> User Management</h4>
+        <p class="text-sm text-muted">View all platform users, manage access permissions, and activate/deactivate accounts.</p>
+        <a href="{{ url_for('admin.users') }}" class="btn btn-outline btn-sm">Manage Users</a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <h4><i class="fas fa-pills text-success"></i> Pharmacy Inventory</h4>
+        <p class="text-sm text-muted">Add new medicines, adjust stock levels, set prescription requirements, and track reorders.</p>
+        <a href="{{ url_for('admin.medicines') }}" class="btn btn-outline btn-sm">Manage Catalog</a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <h4><i class="fas fa-shipping-fast text-warning"></i> Order Fulfillment</h4>
+        <p class="text-sm text-muted">Process pharmacy orders, verify uploaded prescriptions, and update delivery statuses.</p>
+        <a href="{{ url_for('admin.orders') }}" class="btn btn-outline btn-sm">View Orders</a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <h4><i class="fas fa-undo-alt text-danger"></i> Refund Management</h4>
+        <p class="text-sm text-muted">Review and process refund requests for cancelled appointments and orders.</p>
+        <a href="{{ url_for('admin.refunds') }}" class="btn btn-outline btn-sm">Process Refunds ({{ stats.pending_refunds }})</a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <h4><i class="fas fa-headset text-info"></i> Support Helpdesk</h4>
+        <p class="text-sm text-muted">Track customer issues, assign tickets, and resolve patient or doctor inquiries.</p>
+        <a href="{{ url_for('admin.tickets') }}" class="btn btn-outline btn-sm">Support Tickets</a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <h4><i class="fas fa-history text-muted"></i> Security & Audit Logs</h4>
+        <p class="text-sm text-muted">Inspect security audit trails, sensitive action logs, and system traceability history.</p>
+        <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline btn-sm">Audit Trails</a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <h4><i class="fas fa-stethoscope text-primary"></i> Specialties</h4>
+        <p class="text-sm text-muted">Manage doctor specialties and medical fields available on the platform.</p>
+        <a href="{{ url_for('admin.specialties') }}" class="btn btn-outline btn-sm">Manage Specialties</a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <h4><i class="fas fa-tags text-success"></i> Medicine Categories</h4>
+        <p class="text-sm text-muted">Organize pharmacy inventory into categories for better navigation and search.</p>
+        <a href="{{ url_for('admin.medicine_categories') }}" class="btn btn-outline btn-sm">Manage Categories</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

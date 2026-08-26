@@ -1,0 +1,58 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="apptGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F59E0B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D97706;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <circle cx="100" cy="100" r="90" fill="#FFFBEB" />
+  
+  <!-- Calendar -->
+  <g transform="translate(100, 100)">
+    <!-- Calendar body -->
+    <rect x="-40" y="-35" width="80" height="70" rx="4" fill="white" stroke="#E5E7EB" stroke-width="2"/>
+    
+    <!-- Calendar header -->
+    <rect x="-40" y="-35" width="80" height="15" fill="url(#apptGrad)" rx="4"/>
+    <rect x="-40" y="-27" width="80" height="7" fill="url(#apptGrad)"/>
+    
+    <!-- Binding rings -->
+    <circle cx="-25" cy="-35" r="3" fill="#F59E0B"/>
+    <circle cx="0" cy="-35" r="3" fill="#F59E0B"/>
+    <circle cx="25" cy="-35" r="3" fill="#F59E0B"/>
+    
+    <!-- Calendar grid -->
+    <g fill="#9CA3AF" font-size="8" text-anchor="middle" font-family="Arial">
+      <text x="-25" y="-10">M</text>
+      <text x="-10" y="-10">T</text>
+      <text x="5" y="-10">W</text>
+      <text x="20" y="-10">T</text>
+    </g>
+    
+    <!-- Date numbers -->
+    <g fill="#374151" font-size="10" font-weight="600" text-anchor="middle" font-family="Arial">
+      <text x="-25" y="5">1</text>
+      <text x="-10" y="5">2</text>
+      <text x="5" y="5">3</text>
+      <text x="20" y="5">4</text>
+      
+      <text x="-25" y="20">8</text>
+      <text x="-10" y="20">9</text>
+      <text x="5" y="20">10</text>
+      <text x="20" y="20">11</text>
+    </g>
+    
+    <!-- Selected date (highlighted) -->
+    <circle cx="5" cy="2" r="7" fill="#3B82F6" opacity="0.2"/>
+    <text x="5" y="5" fill="#3B82F6" font-size="10" font-weight="700" text-anchor="middle" font-family="Arial">3</text>
+    
+    <!-- Clock icon in corner -->
+    <g transform="translate(25, 25)" opacity="0.6">
+      <circle cx="0" cy="0" r="8" fill="none" stroke="#F59E0B" stroke-width="1.5"/>
+      <line x1="0" y1="0" x2="0" y2="-5" stroke="#F59E0B" stroke-width="1.5"/>
+      <line x1="0" y1="0" x2="4" y2="0" stroke="#F59E0B" stroke-width="1.5"/>
+    </g>
+  </g>
+</svg>

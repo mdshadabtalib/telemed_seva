@@ -7,11 +7,12 @@ import os
 import logging
 from logging.handlers import RotatingFileHandler
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_from_directory
 from werkzeug.exceptions import HTTPException
 
 from .config import config
 from .extensions import db, migrate, login_manager, csrf, limiter, mail
+from .utils.security import add_security_headers
 
 
 def create_app(config_name=None):
@@ -38,6 +39,38 @@ def create_app(config_name=None):
     _register_cli_commands(app)
     _ensure_directories(app)
     _configure_logging(app)
+
+    # Security headers
+    app.after_request(add_security_headers)
+
+    # Static uploads route — authentication required; only known subfolders served
+    ALLOWED_UPLOAD_FOLDERS = frozenset([
+        'avatars', 'documents', 'prescriptions', 'medicines', 'reports',
+    ])
+
+    @app.route('/uploads/<folder>/<filename>')
+    def uploaded_file(folder, filename):
+        from flask_login import current_user
+        if folder not in ALLOWED_UPLOAD_FOLDERS:
+            from flask import abort
+            abort(404)
+        # Prescription and medical documents require login
+        if folder in ('prescriptions', 'documents', 'reports'):
+            if not current_user.is_authenticated:
+                from flask import redirect, url_for
+                return redirect(url_for('auth.login'))
+        folder_path = os.path.join(app.config['UPLOAD_FOLDER'], folder)
+        return send_from_directory(folder_path, filename)
+
+    # Health-check — used by Docker/load-balancer probes
+    @app.route('/health')
+    def health():
+        from flask import jsonify
+        try:
+            db.session.execute(db.text('SELECT 1'))
+            return jsonify({'status': 'ok', 'db': 'ok'}), 200
+        except Exception as exc:
+            return jsonify({'status': 'error', 'db': str(exc)}), 503
 
     return app
 
@@ -139,12 +172,14 @@ def _register_error_handlers(app):
 
 def _register_context_processors(app):
     """Inject common variables into all templates."""
+    from datetime import datetime, timezone
 
     @app.context_processor
     def inject_platform():
         return {
             'platform_name': app.config['PLATFORM_NAME'],
             'currency': app.config['PLATFORM_CURRENCY_SYMBOL'],
+            'now': lambda: datetime.now(timezone.utc),
         }
 
     @app.context_processor

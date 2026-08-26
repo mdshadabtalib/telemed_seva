@@ -9,6 +9,7 @@ class NotificationType(enum.Enum):
     APPOINTMENT_BOOKED = 'appointment_booked'
     APPOINTMENT_CONFIRMED = 'appointment_confirmed'
     APPOINTMENT_CANCELLED = 'appointment_cancelled'
+    APPOINTMENT_COMPLETED = 'appointment_completed'
     APPOINTMENT_REMINDER = 'appointment_reminder'
     CONSULTATION_STARTED = 'consultation_started'
     PRESCRIPTION_CREATED = 'prescription_created'

@@ -5,11 +5,13 @@
 <div style="min-height:80vh; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg, var(--gray-50), var(--primary-50));">
   <div style="width:100%; max-width:440px; padding: var(--space-6);">
     <div style="text-align:center; margin-bottom:var(--space-8);">
-      <a href="{{ url_for('auth.login') }}" class="navbar-brand" style="justify-content:center; font-size:1.75rem;">
-        <span class="brand-icon" style="width:44px; height:44px; font-size:1.25rem;"><i class="fas fa-heartbeat"></i></span>
-        {{ platform_name }}
-      </a>
-      <p style="margin-top:var(--space-2); color:var(--gray-500);">Welcome back! Log in to continue.</p>
+      <div style="display:flex; justify-content:center; margin-bottom:var(--space-4);">
+        <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="TeleMed Seva" style="height: 50px;">
+      </div>
+      <h2 style="font-size:1.5rem; font-weight:700; color:var(--gray-800); margin-bottom:var(--space-2);">
+        <i class="fas fa-sign-in-alt" style="color:var(--primary);"></i> Welcome Back
+      </h2>
+      <p style="margin-top:var(--space-2); color:var(--gray-500);">Log in to access your healthcare dashboard.</p>
     </div>
     <div class="card">
       <div class="card-body" style="padding:var(--space-8);">
@@ -26,9 +28,14 @@
             {% for error in form.password.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
           </div>
           <div class="form-group">
-            <div class="form-check">
-              {{ form.remember_me(id="remember") }}
-              <label for="remember" style="font-size:0.85rem; color:var(--gray-600);">Remember me</label>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div class="form-check">
+                {{ form.remember_me(id="remember") }}
+                <label for="remember" style="font-size:0.85rem; color:var(--gray-600);">Remember me</label>
+              </div>
+              <a href="{{ url_for('auth.forgot_password') }}" style="font-size:0.85rem;">
+                Forgot password?
+              </a>
             </div>
           </div>
           <button type="submit" class="btn btn-primary btn-block btn-lg">Log In</button>
