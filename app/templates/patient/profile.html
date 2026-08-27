@@ -7,7 +7,7 @@
     <div class="card-body">
       <form method="POST" enctype="multipart/form-data">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <h3 class="mb-4">Personal Information</h3>
+        <h2 class="mb-4">Personal Information</h2>
         <div class="form-row">
           <div class="form-group"><label class="form-label">First Name</label><input type="text" name="first_name" class="form-control" value="{{ profile.first_name }}" required></div>
           <div class="form-group"><label class="form-label">Last Name</label><input type="text" name="last_name" class="form-control" value="{{ profile.last_name }}" required></div>
@@ -22,7 +22,7 @@
         </div>
         <div class="form-group"><label class="form-label">Profile Photo</label><input type="file" name="avatar" class="form-control" accept="image/*"></div>
 
-        <h3 style="margin-top:var(--space-8);" class="mb-4">Medical Information</h3>
+        <h2 style="margin-top:var(--space-8);" class="mb-4">Medical Information</h2>
         <div class="form-group"><label class="form-label">Allergies</label><textarea name="allergies" class="form-control" rows="2" placeholder="List any known allergies...">{{ profile.allergies or '' }}</textarea></div>
         <div class="form-group"><label class="form-label">Medical History</label><textarea name="medical_history" class="form-control" rows="3" placeholder="Any pre-existing conditions, surgeries, etc.">{{ profile.medical_history or '' }}</textarea></div>
         <div class="form-row">

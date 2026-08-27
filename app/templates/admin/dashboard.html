@@ -21,7 +21,7 @@
           <span style="background: #ef4444; color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700;">{{ stats.pending_verifications }}</span>
           {% endif %}
         </a>
-        <a href="{{ url_for('admin.medicines') }}" class="btn" style="background: #e94560; color: white; border: none; display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-4); box-shadow: 0 2px 8px rgba(233,69,96,0.4);">
+        <a href="{{ url_for('admin.medicines') }}" class="btn btn-admin-action" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-4); box-shadow: 0 2px 8px rgba(240,147,251,0.4);">
           <i class="fas fa-capsules"></i> Manage Medicines
         </a>
       </div>
@@ -119,10 +119,10 @@
   </style>
 
   <!-- Section Title -->
-  <h3 style="font-size: 1.4rem; font-weight: 700; color: var(--gray-800); margin-bottom: var(--space-5); display: flex; align-items: center; gap: var(--space-3);">
+  <h2 style="font-size: 1.4rem; font-weight: 700; color: var(--gray-800); margin-bottom: var(--space-5); display: flex; align-items: center; gap: var(--space-3);">
     <span style="width: 4px; height: 28px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 2px; display: inline-block;"></span>
     Administrative Sections
-  </h3>
+  </h2>
 
   <!-- Admin Action Cards -->
   <div class="grid grid-3">
@@ -133,7 +133,7 @@
         <div style="background: rgba(255,255,255,0.2); border-radius: var(--radius-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
           <i class="fas fa-user-shield" style="color: white; font-size: 1.3rem;"></i>
         </div>
-        <h4 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">Doctor Verification</h4>
+        <h3 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">Doctor Verification</h3>
       </div>
       <div class="card-body" style="padding: var(--space-5);">
         <p style="color: var(--gray-600); font-size: 0.88rem; margin-bottom: var(--space-4); line-height: 1.6;">Review medical credentials, licenses, and background proofs for pending doctor registrations.</p>
@@ -149,7 +149,7 @@
         <div style="background: rgba(255,255,255,0.2); border-radius: var(--radius-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
           <i class="fas fa-users-cog" style="color: white; font-size: 1.3rem;"></i>
         </div>
-        <h4 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">User Management</h4>
+        <h3 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">User Management</h3>
       </div>
       <div class="card-body" style="padding: var(--space-5);">
         <p style="color: var(--gray-600); font-size: 0.88rem; margin-bottom: var(--space-4); line-height: 1.6;">View all platform users, manage access permissions, and activate/deactivate accounts.</p>
@@ -165,7 +165,7 @@
         <div style="background: rgba(255,255,255,0.2); border-radius: var(--radius-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
           <i class="fas fa-pills" style="color: white; font-size: 1.3rem;"></i>
         </div>
-        <h4 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">Pharmacy Inventory</h4>
+        <h3 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">Pharmacy Inventory</h3>
       </div>
       <div class="card-body" style="padding: var(--space-5);">
         <p style="color: var(--gray-600); font-size: 0.88rem; margin-bottom: var(--space-4); line-height: 1.6;">Add new medicines, adjust stock levels, set prescription requirements, and track reorders.</p>
@@ -181,7 +181,7 @@
         <div style="background: rgba(255,255,255,0.2); border-radius: var(--radius-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
           <i class="fas fa-shipping-fast" style="color: white; font-size: 1.3rem;"></i>
         </div>
-        <h4 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">Order Fulfillment</h4>
+        <h3 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">Order Fulfillment</h3>
       </div>
       <div class="card-body" style="padding: var(--space-5);">
         <p style="color: var(--gray-600); font-size: 0.88rem; margin-bottom: var(--space-4); line-height: 1.6;">Process pharmacy orders, verify uploaded prescriptions, and update delivery statuses.</p>
@@ -197,7 +197,7 @@
         <div style="background: rgba(255,255,255,0.2); border-radius: var(--radius-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
           <i class="fas fa-undo-alt" style="color: white; font-size: 1.3rem;"></i>
         </div>
-        <h4 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">Refund Management</h4>
+        <h3 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">Refund Management</h3>
       </div>
       <div class="card-body" style="padding: var(--space-5);">
         <p style="color: var(--gray-600); font-size: 0.88rem; margin-bottom: var(--space-4); line-height: 1.6;">Review and process refund requests for cancelled appointments and orders.</p>
@@ -213,7 +213,7 @@
         <div style="background: rgba(255,255,255,0.2); border-radius: var(--radius-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
           <i class="fas fa-headset" style="color: white; font-size: 1.3rem;"></i>
         </div>
-        <h4 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">Support Helpdesk</h4>
+        <h3 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">Support Helpdesk</h3>
       </div>
       <div class="card-body" style="padding: var(--space-5);">
         <p style="color: var(--gray-600); font-size: 0.88rem; margin-bottom: var(--space-4); line-height: 1.6;">Track customer issues, assign tickets, and resolve patient or doctor inquiries.</p>
@@ -229,7 +229,7 @@
         <div style="background: rgba(255,255,255,0.15); border-radius: var(--radius-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
           <i class="fas fa-history" style="color: white; font-size: 1.3rem;"></i>
         </div>
-        <h4 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">Security &amp; Audit Logs</h4>
+        <h3 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">Security &amp; Audit Logs</h3>
       </div>
       <div class="card-body" style="padding: var(--space-5);">
         <p style="color: var(--gray-600); font-size: 0.88rem; margin-bottom: var(--space-4); line-height: 1.6;">Inspect security audit trails, sensitive action logs, and system traceability history.</p>
@@ -245,7 +245,7 @@
         <div style="background: rgba(255,255,255,0.2); border-radius: var(--radius-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
           <i class="fas fa-stethoscope" style="color: white; font-size: 1.3rem;"></i>
         </div>
-        <h4 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">Medical Specialties</h4>
+        <h3 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">Medical Specialties</h3>
       </div>
       <div class="card-body" style="padding: var(--space-5);">
         <p style="color: var(--gray-600); font-size: 0.88rem; margin-bottom: var(--space-4); line-height: 1.6;">Manage doctor specialties and medical fields available on the platform (42 active).</p>
@@ -261,7 +261,7 @@
         <div style="background: rgba(255,255,255,0.2); border-radius: var(--radius-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
           <i class="fas fa-tags" style="color: white; font-size: 1.3rem;"></i>
         </div>
-        <h4 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">Medicine Categories</h4>
+        <h3 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">Medicine Categories</h3>
       </div>
       <div class="card-body" style="padding: var(--space-5);">
         <p style="color: var(--gray-600); font-size: 0.88rem; margin-bottom: var(--space-4); line-height: 1.6;">Organize pharmacy inventory into categories for better navigation and search.</p>

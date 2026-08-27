@@ -38,12 +38,6 @@
             {{ 'Accepting Appointments' if profile.is_available else 'Not Accepting' }}
           </button>
         </form>
-        <a href="{{ url_for('doctor.dashboard') }}"
-           style="padding:10px 18px; border-radius:50px; font-weight:600; font-size:0.9rem;
-                  background:rgba(255,255,255,0.12); color:white; text-decoration:none;
-                  border:1px solid rgba(255,255,255,0.25); display:flex; align-items:center; gap:8px;">
-          <i class="fas fa-arrow-left"></i> Dashboard
-        </a>
       </div>
     </div>
 
@@ -109,7 +103,7 @@
             <i class="fas fa-plus" style="color:white; font-size:1rem;"></i>
           </div>
           <div>
-            <h3 style="color:white; margin:0; font-size:1.05rem; font-weight:700;">Add Availability Slot</h3>
+            <h2 style="color:white; margin:0; font-size:1.05rem; font-weight:700;">Add Availability Slot</h2>
             <p style="color:rgba(255,255,255,0.8); margin:0; font-size:0.8rem;">Define when patients can book you</p>
           </div>
         </div>
@@ -287,7 +281,7 @@
             <i class="fas fa-calendar-week" style="color:white; font-size:1rem;"></i>
           </div>
           <div>
-            <h3 style="color:white; margin:0; font-size:1.05rem; font-weight:700;">Weekly Schedule</h3>
+            <h2 style="color:white; margin:0; font-size:1.05rem; font-weight:700;">Weekly Schedule</h2>
             <p style="color:rgba(255,255,255,0.8); margin:0; font-size:0.8rem;">
               {{ slots|length }} slot{{ 's' if slots|length != 1 }} across your week
             </p>
@@ -453,7 +447,7 @@
         {% if not slots %}
         <div style="padding:48px 24px; text-align:center;">
           <div style="font-size:3.5rem; opacity:0.15; margin-bottom:16px;">📅</div>
-          <h4 style="color:#6b7280; margin-bottom:8px; font-size:1.1rem;">No slots yet</h4>
+          <h3 style="color:#6b7280; margin-bottom:8px; font-size:1.1rem;">No slots yet</h3>
           <p style="color:#9ca3af; font-size:0.9rem; max-width:280px; margin:0 auto;">
             Use the form on the left to add your first availability slot.
           </p>

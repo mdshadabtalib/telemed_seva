@@ -574,10 +574,212 @@ tr:hover td { background: var(--gray-50); }
 /* --- Empty state --- */
 .empty-state {
   text-align: center;
-  padding: var(--space-16) var(--space-6);
+  padding: var(--space-10) var(--space-6);  /* reduced from space-16 — issue 27/55 */
   color: var(--gray-400);
 }
 .empty-state .empty-icon { font-size: 3rem; margin-bottom: var(--space-4); }
+
+/* ===================================================================
+   GLOBAL USABILITY PATCH — fixes issues 1–56
+   =================================================================== */
+
+/* --- Heading visual sizes decoupled from semantic level (issues 1-5, 7, 19, 24, 34, 41, 46, 52) ---
+   h3 used as section-sub-heading should look like former h4; we expose
+   a shared utility class instead of overriding every heading globally.
+*/
+.section-subheading  { font-size: 1.125rem; font-weight: 600; }  /* card titles, was h4 */
+.page-section-title  { font-size: 1.4rem;   font-weight: 700; }  /* dashboard section headers, was h3 */
+
+/* --- select chevron affordance (issues 21) --- */
+select.form-control {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2364748b' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-3) center;
+  padding-right: var(--space-8);
+}
+
+/* --- form-check vertical alignment (issue 3) --- */
+.form-check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+.form-check input[type="checkbox"],
+.form-check input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 2px;   /* optical vertical alignment with first line of label */
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+.form-check label { cursor: pointer; line-height: 1.5; }
+
+/* --- file input custom style (issue 22) --- */
+.file-upload-wrapper {
+  position: relative;
+}
+.file-upload-wrapper input[type="file"] {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1.5px dashed var(--gray-300);
+  border-radius: var(--radius);
+  background: var(--gray-50);
+  color: var(--gray-600);
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: border-color var(--transition);
+}
+.file-upload-wrapper input[type="file"]:hover,
+.file-upload-wrapper input[type="file"]:focus {
+  border-color: var(--primary);
+  outline: none;
+  background: var(--primary-50);
+}
+
+/* --- active nav link (issues 20, 35, 44, 53) --- */
+.navbar-nav a[aria-current="page"],
+.navbar-nav a.active {
+  color: var(--primary);
+  background: var(--primary-50);
+  font-weight: 600;
+}
+.navbar-nav a[aria-current="page"] i,
+.navbar-nav a.active i { opacity: 1; }
+
+/* --- touch target minimum (issues 17, 37, 39) --- */
+.btn-action {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  border: 1.5px solid var(--gray-300);
+  background: white;
+  cursor: pointer;
+  transition: all var(--transition);
+  color: var(--gray-600);
+  font-size: 0.9rem;
+}
+.btn-action:hover { background: var(--gray-100); }
+.btn-action-pause {
+  background: var(--warning-light);
+  border-color: #fcd34d;
+  color: #92400e;
+}
+.btn-action-pause:hover { background: #fef08a; }
+.btn-action-activate {
+  background: var(--success-light);
+  border-color: #6ee7b7;
+  color: #065f46;
+}
+.btn-action-activate:hover { background: #a7f3d0; }
+.btn-action-danger {
+  background: var(--danger-light);
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+.btn-action-danger:hover { background: #fecaca; }
+
+/* --- admin action buttons unified color (issues 47, 48, 50) --- */
+.btn-admin-action {
+  background: var(--primary);
+  color: white;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all var(--transition);
+  box-shadow: 0 2px 4px rgba(8,145,178,0.2);
+}
+.btn-admin-action:hover {
+  background: var(--primary-dark);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(8,145,178,0.3);
+}
+
+/* --- medicine card flex column for consistent CTA alignment (issue 16) --- */
+.medicine-card .card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.medicine-card .card-body .card-content { flex: 1; }
+.medicine-card .card-body .card-actions {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--gray-200);
+  margin-top: var(--space-3);
+}
+
+/* --- category filter scrollable container (issue 18) --- */
+.category-scroll {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+  scrollbar-width: thin;
+  scrollbar-color: var(--gray-300) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+.category-scroll::-webkit-scrollbar { height: 4px; }
+.category-scroll::-webkit-scrollbar-track { background: transparent; }
+.category-scroll::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 2px; }
+.category-scroll a,
+.category-scroll button {
+  flex-shrink: 0;  /* prevent pills wrapping/breaking */
+}
+
+/* --- verification / email banner (issue 28) --- */
+.email-verify-banner {
+  background: var(--warning-light);
+  border-bottom: 2px solid var(--warning);
+  padding: var(--space-3) var(--space-4);
+  text-align: center;
+  font-size: 0.9rem;
+  color: #92400e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+}
+.email-verify-banner i { font-size: 1.1rem; }
+.email-verify-banner a { color: #78350f; font-weight: 700; text-decoration: underline; }
+
+/* --- stat card number size (issue 12) --- */
+.stat-value { font-size: 2rem; font-weight: 800; color: var(--secondary-dark); line-height: 1; }
+
+/* --- availability toggle — status vs action (issue 26, 38) --- */
+.availability-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 0.875rem;
+  pointer-events: none;
+  border: 2px solid transparent;
+}
+.availability-status.available {
+  background: var(--success-light);
+  color: #065f46;
+  border-color: #6ee7b7;
+}
+.availability-status.unavailable {
+  background: var(--danger-light);
+  color: #991b1b;
+  border-color: #fca5a5;
+}
 .empty-state h3 { color: var(--gray-500); }
 .empty-state p { max-width: 400px; margin: var(--space-2) auto var(--space-6); }
 
@@ -588,6 +790,9 @@ tr:hover td { background: var(--gray-50); }
   padding: var(--space-20) 0;
   position: relative;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  min-height: 480px;
 }
 .hero::before {
   content: '';
@@ -645,6 +850,10 @@ tr:hover td { background: var(--gray-50); }
   margin: 0 auto var(--space-4);
 }
 .feature-card h4 { margin-bottom: var(--space-2); }
+/* Renamed heading classes (h4 → h3) keep the same visual size */
+.feature-card-title { font-size: 1rem; font-weight: 600; margin-bottom: var(--space-2); }
+/* Footer section headings (h5 → h3) keep the same visual size */
+.footer h3.footer-section-title { color: white; font-size: 0.9rem; margin-bottom: var(--space-4); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
 
 /* How it works */
 .steps { counter-reset: step; }

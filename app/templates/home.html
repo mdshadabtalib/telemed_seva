@@ -30,17 +30,17 @@
     <div class="grid grid-3">
       <div class="feature-card">
         <div class="feature-icon"><i class="fas fa-user-doctor"></i></div>
-        <h4>Find a Doctor</h4>
+        <h3 class="feature-card-title">Find a Doctor</h3>
         <p>Search by specialty, check ratings, read reviews, and choose the right doctor for you.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon"><i class="fas fa-calendar-check"></i></div>
-        <h4>Book Appointment</h4>
+        <h3 class="feature-card-title">Book Appointment</h3>
         <p>Pick a convenient time slot, pay securely, and get instant confirmation.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon"><i class="fas fa-video"></i></div>
-        <h4>Consult Online</h4>
+        <h3 class="feature-card-title">Consult Online</h3>
         <p>Join the consultation room, chat with your doctor, share reports, and receive a digital prescription.</p>
       </div>
     </div>
@@ -66,9 +66,9 @@
         'Psychiatry': 'fa-head-side-virus'
       } %}
       {% for name, icon in specialty_icons.items() %}
-      <a href="{{ url_for('appointments.search_doctors', specialty=loop.index) }}" class="feature-card" style="text-decoration:none;">
+      <a href="{{ url_for('appointments.search_doctors') }}" class="feature-card" style="text-decoration:none;">
         <div class="feature-icon"><i class="fas {{ icon }}"></i></div>
-        <h4>{{ name }}</h4>
+        <h3 class="feature-card-title">{{ name }}</h3>
       </a>
       {% endfor %}
     </div>
@@ -85,17 +85,17 @@
     <div class="grid grid-3">
       <div class="feature-card">
         <div class="feature-icon" style="background: linear-gradient(135deg, #d1fae5, #a7f3d0); color: #059669;"><i class="fas fa-pills"></i></div>
-        <h4>Wide Range</h4>
+        <h3 class="feature-card-title">Wide Range</h3>
         <p>Thousands of medicines from trusted manufacturers at the best prices.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon" style="background: linear-gradient(135deg, #fef3c7, #fde68a); color: #d97706;"><i class="fas fa-file-prescription"></i></div>
-        <h4>Prescription Verified</h4>
+        <h3 class="feature-card-title">Prescription Verified</h3>
         <p>Prescription-required medicines are verified by licensed pharmacists before dispatch.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon" style="background: linear-gradient(135deg, #dbeafe, #93c5fd); color: #2563eb;"><i class="fas fa-truck"></i></div>
-        <h4>Fast Delivery</h4>
+        <h3 class="feature-card-title">Fast Delivery</h3>
         <p>Track your order in real-time with free delivery on orders above ₹500.</p>
       </div>
     </div>
@@ -109,28 +109,28 @@
 <section class="section">
   <div class="container">
     <div class="section-header">
-      <h2>Your Trust & Safety</h2>
+      <h2>Your Trust &amp; Safety</h2>
       <p>We take your health data privacy seriously</p>
     </div>
     <div class="grid grid-4">
       <div style="text-align:center;">
         <div style="font-size:2rem; color:var(--primary); margin-bottom:var(--space-3);"><i class="fas fa-user-shield"></i></div>
-        <h4>Verified Doctors</h4>
+        <h3 class="feature-card-title">Verified Doctors</h3>
         <p class="text-sm">Every doctor is verified by our admin team before they can consult.</p>
       </div>
       <div style="text-align:center;">
         <div style="font-size:2rem; color:var(--success); margin-bottom:var(--space-3);"><i class="fas fa-lock"></i></div>
-        <h4>Secure & Private</h4>
+        <h3 class="feature-card-title">Secure &amp; Private</h3>
         <p class="text-sm">Your medical data is encrypted and never shared without your consent.</p>
       </div>
       <div style="text-align:center;">
         <div style="font-size:2rem; color:var(--warning); margin-bottom:var(--space-3);"><i class="fas fa-file-medical"></i></div>
-        <h4>Digital Records</h4>
+        <h3 class="feature-card-title">Digital Records</h3>
         <p class="text-sm">Access your prescriptions and medical records anytime, anywhere.</p>
       </div>
       <div style="text-align:center;">
         <div style="font-size:2rem; color:var(--info); margin-bottom:var(--space-3);"><i class="fas fa-headset"></i></div>
-        <h4>24/7 Support</h4>
+        <h3 class="feature-card-title">24/7 Support</h3>
         <p class="text-sm">Our support team is always ready to help with any issues.</p>
       </div>
     </div>
