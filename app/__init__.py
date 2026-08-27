@@ -203,6 +203,12 @@ def _register_cli_commands(app):
         from .utils.seed import seed_database
         seed_database()
 
+    @app.cli.command('seed-medicines')
+    def seed_medicines_cmd():
+        """Seed comprehensive medicine database with 100+ medicines."""
+        from .utils.seed_medicines import seed_medicines
+        seed_medicines()
+
     @app.cli.command('create-admin')
     def create_admin():
         """Create a superadmin user."""

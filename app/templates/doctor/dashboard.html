@@ -1,28 +1,150 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container">
-  <div class="flex-between mb-6">
-    <div><h1>Doctor Dashboard</h1><p class="text-muted mb-0">Welcome, Dr. {{ profile.full_name }}</p></div>
-    <form method="POST" action="{{ url_for('doctor.toggle_availability') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="btn {{ 'btn-success' if profile.is_available else 'btn-danger' }}"><i class="fas {{ 'fa-toggle-on' if profile.is_available else 'fa-toggle-off' }}"></i> {{ 'Available' if profile.is_available else 'Unavailable' }}</button></form>
+  <!-- Header with Gradient Background -->
+  <div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); border-radius: var(--radius-lg); padding: var(--space-6); margin-bottom: var(--space-6); color: white; box-shadow: 0 8px 24px rgba(17, 153, 142, 0.25);">
+    <div class="flex-between" style="align-items: center;">
+      <div>
+        <h1 style="color: white; margin-bottom: var(--space-1); font-size: 1.75rem;">Doctor Dashboard</h1>
+        <p class="mb-0" style="opacity: 0.95; font-size: 1.1rem;">Welcome, Dr. {{ profile.full_name }} 👨‍⚕️</p>
+      </div>
+      <form method="POST" action="{{ url_for('doctor.toggle_availability') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn {{ 'btn-success' if profile.is_available else 'btn-danger' }}" style="padding: var(--space-3) var(--space-5); font-size: 1rem; border: 2px solid white; background: {{ 'rgba(16, 185, 129, 1)' if profile.is_available else 'rgba(239, 68, 68, 1)' }}; display: flex; align-items: center; gap: var(--space-2);">
+          <i class="fas {{ 'fa-toggle-on' if profile.is_available else 'fa-toggle-off' }}" style="font-size: 1.25rem;"></i>
+          <span style="font-weight: 600;">{{ 'Available for Consultations' if profile.is_available else 'Currently Unavailable' }}</span>
+        </button>
+      </form>
+    </div>
   </div>
+  
   {% if not profile.is_verified %}
-  <div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> Your account is not verified yet. <a href="{{ url_for('doctor.verification') }}">Submit verification documents →</a></div>
-  {% endif %}
-  <div class="grid grid-4 mb-8">
-    <div class="stat-card"><div class="stat-icon primary"><i class="fas fa-calendar-day"></i></div><div><div class="stat-value">{{ today_appointments|length }}</div><div class="stat-label">Today's Appointments</div></div></div>
-    <div class="stat-card"><div class="stat-icon success"><i class="fas fa-check-circle"></i></div><div><div class="stat-value">{{ completed_consultations }}</div><div class="stat-label">Completed</div></div></div>
-    <div class="stat-card"><div class="stat-icon info"><i class="fas fa-calendar"></i></div><div><div class="stat-value">{{ total_appointments }}</div><div class="stat-label">Total Appointments</div></div></div>
-    <div class="stat-card"><div class="stat-icon warning"><i class="fas fa-star"></i></div><div><div class="stat-value">{{ profile.average_rating }}</div><div class="stat-label">Rating ({{ profile.review_count }} reviews)</div></div></div>
+  <div class="alert alert-warning" style="border-radius: var(--radius-lg); border-left: 4px solid #f59e0b; padding: var(--space-4); background: rgba(251, 191, 36, 0.1); display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-6);">
+    <i class="fas fa-exclamation-triangle" style="font-size: 1.5rem; color: #f59e0b;"></i>
+    <div>
+      <strong>Account Verification Pending</strong>
+      <p style="margin: 0; margin-top: 4px;">Your account is not verified yet. <a href="{{ url_for('doctor.verification') }}" style="color: #f59e0b; text-decoration: underline; font-weight: 600;">Submit verification documents →</a></p>
+    </div>
   </div>
-  <div class="card"><div class="card-header"><i class="fas fa-calendar-alt"></i> Today's Appointments</div><div class="card-body">
+  {% endif %}
+  
+  <!-- Stats Cards with Gradients -->
+  <div class="grid grid-4 mb-8">
+    <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); transition: all 0.3s ease;">
+      <div class="stat-icon" style="background: rgba(255,255,255,0.2); color: white;">
+        <i class="fas fa-calendar-day" style="font-size: 1.5rem;"></i>
+      </div>
+      <div>
+        <div class="stat-value" style="color: white; font-size: 2rem; font-weight: 700;">{{ today_appointments|length }}</div>
+        <div class="stat-label" style="color: rgba(255,255,255,0.9); font-weight: 500;">Today's Appointments</div>
+      </div>
+    </div>
+    
+    <div class="stat-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(17, 153, 142, 0.3); transition: all 0.3s ease;">
+      <div class="stat-icon" style="background: rgba(255,255,255,0.2); color: white;">
+        <i class="fas fa-check-circle" style="font-size: 1.5rem;"></i>
+      </div>
+      <div>
+        <div class="stat-value" style="color: white; font-size: 2rem; font-weight: 700;">{{ completed_consultations }}</div>
+        <div class="stat-label" style="color: rgba(255,255,255,0.9); font-weight: 500;">Completed Consultations</div>
+      </div>
+    </div>
+    
+    <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3); transition: all 0.3s ease;">
+      <div class="stat-icon" style="background: rgba(255,255,255,0.2); color: white;">
+        <i class="fas fa-calendar" style="font-size: 1.5rem;"></i>
+      </div>
+      <div>
+        <div class="stat-value" style="color: white; font-size: 2rem; font-weight: 700;">{{ total_appointments }}</div>
+        <div class="stat-label" style="color: rgba(255,255,255,0.9); font-weight: 500;">Total Appointments</div>
+      </div>
+    </div>
+    
+    <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(250, 112, 154, 0.3); transition: all 0.3s ease;">
+      <div class="stat-icon" style="background: rgba(255,255,255,0.2); color: white;">
+        <i class="fas fa-star" style="font-size: 1.5rem;"></i>
+      </div>
+      <div>
+        <div class="stat-value" style="color: white; font-size: 2rem; font-weight: 700;">{{ profile.average_rating }}</div>
+        <div class="stat-label" style="color: rgba(255,255,255,0.9); font-weight: 500;">Rating ({{ profile.review_count }} reviews)</div>
+      </div>
+    </div>
+  </div>
+  
+  <style>
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+    }
+  </style>
+  <!-- Today's Appointments Table with Enhanced Design -->
+  <div class="card" style="border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08);">
+    <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: var(--space-4); display: flex; align-items: center; gap: var(--space-2); font-weight: 600; font-size: 1.1rem;">
+      <i class="fas fa-calendar-alt"></i> Today's Appointments
+    </div>
+    <div class="card-body" style="padding: 0;">
     {% if today_appointments %}
-    <div class="table-responsive"><table><thead><tr><th>Time</th><th>Patient</th><th>Type</th><th>Status</th><th>Action</th></tr></thead><tbody>
-    {% for appt in today_appointments %}
-    <tr><td>{{ appt.start_time.strftime('%I:%M %p') }}</td><td>{{ appt.patient.display_name }}</td><td><span class="badge badge-info">{{ appt.appointment_type.value }}</span></td><td><span class="badge badge-{{ 'success' if appt.status.value == 'confirmed' else 'warning' }}">{{ appt.status.value }}</span></td>
-    <td>{% if appt.consultation %}<a href="{{ url_for('consultation.room', consultation_id=appt.consultation.id) }}" class="btn btn-primary btn-sm"><i class="fas fa-video"></i> Join</a>{% endif %}</td></tr>
-    {% endfor %}
-    </tbody></table></div>
-    {% else %}<div class="empty-state" style="padding:var(--space-8);"><p>No appointments scheduled for today.</p></div>{% endif %}
-  </div></div>
+    <div class="table-responsive">
+      <table style="width: 100%;">
+        <thead style="background: var(--gray-50); border-bottom: 2px solid var(--gray-200);">
+          <tr>
+            <th style="padding: var(--space-4); text-align: left; font-weight: 600; color: var(--gray-700);">Time</th>
+            <th style="padding: var(--space-4); text-align: left; font-weight: 600; color: var(--gray-700);">Patient</th>
+            <th style="padding: var(--space-4); text-align: left; font-weight: 600; color: var(--gray-700);">Type</th>
+            <th style="padding: var(--space-4); text-align: left; font-weight: 600; color: var(--gray-700);">Status</th>
+            <th style="padding: var(--space-4); text-align: left; font-weight: 600; color: var(--gray-700);">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for appt in today_appointments %}
+        <tr style="border-bottom: 1px solid var(--gray-100); transition: background 0.2s ease;" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='white'">
+          <td style="padding: var(--space-4);">
+            <div style="display: flex; align-items: center; gap: var(--space-2);">
+              <i class="fas fa-clock" style="color: var(--primary); font-size: 0.9rem;"></i>
+              <strong style="font-size: 0.95rem;">{{ appt.start_time.strftime('%I:%M %p') }}</strong>
+            </div>
+          </td>
+          <td style="padding: var(--space-4);">
+            <div style="display: flex; align-items: center; gap: var(--space-3);">
+              <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.9rem;">
+                {{ appt.patient.display_name[0].upper() }}
+              </div>
+              <strong style="font-size: 0.95rem;">{{ appt.patient.display_name }}</strong>
+            </div>
+          </td>
+          <td style="padding: var(--space-4);">
+            <span class="badge badge-info" style="padding: var(--space-2) var(--space-3); font-size: 0.75rem;">
+              <i class="fas fa-{{ 'video' if appt.appointment_type.value == 'video' else 'phone' if appt.appointment_type.value == 'phone' else 'hospital' }}" style="font-size: 0.7rem;"></i>
+              {{ appt.appointment_type.value }}
+            </span>
+          </td>
+          <td style="padding: var(--space-4);">
+            <span class="badge badge-{{ 'success' if appt.status.value == 'confirmed' else 'warning' }}" style="padding: var(--space-2) var(--space-3); font-size: 0.75rem;">
+              {{ appt.status.value }}
+            </span>
+          </td>
+          <td style="padding: var(--space-4);">
+            {% if appt.consultation %}
+            <a href="{{ url_for('consultation.room', consultation_id=appt.consultation.id) }}" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4);">
+              <i class="fas fa-video"></i> Join Consultation
+            </a>
+            {% else %}
+            <span style="color: var(--gray-400); font-size: 0.85rem;">Not started</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state" style="padding:var(--space-8); text-align: center;">
+      <div style="font-size: 4rem; opacity: 0.2; margin-bottom: var(--space-3);">📅</div>
+      <h4 style="color: var(--gray-700); margin-bottom: var(--space-2);">No appointments scheduled for today</h4>
+      <p style="color: var(--gray-500);">Enjoy your free time or update your availability schedule</p>
+    </div>
+    {% endif %}
+  </div>
+  </div>
 </div>
 {% endblock %}

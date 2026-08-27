@@ -22,6 +22,7 @@ class RegistrationForm(FlaskForm):
     role = SelectField('I am a', choices=[
         (UserRole.PATIENT.value, 'Patient'),
         (UserRole.DOCTOR.value, 'Doctor'),
+        (UserRole.ADMIN.value, 'Admin / Manager'),
     ], validators=[DataRequired()])
     password = PasswordField('Password', validators=[
         DataRequired(), Length(min=8), StrongPassword()

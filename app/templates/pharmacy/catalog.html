@@ -1,37 +1,156 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container">
-  <div class="flex-between mb-6"><h1>Pharmacy</h1>
-    <form method="GET" style="display:flex; gap:var(--space-2);"><input type="text" name="q" class="form-control" placeholder="Search medicines..." value="{{ filters.get('q','') }}" style="min-width:200px;"><button class="btn btn-primary"><i class="fas fa-search"></i></button></form>
+
+  <!-- Pharmacy Hero Header -->
+  <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: var(--radius-lg); padding: var(--space-8); margin-bottom: var(--space-6); color: white; box-shadow: 0 8px 24px rgba(240, 147, 251, 0.25);">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-4);">
+      <div>
+        <h1 style="color: white; margin-bottom: var(--space-2); font-size: 2rem; display: flex; align-items: center; gap: var(--space-3);">
+          <i class="fas fa-capsules"></i> Online Pharmacy
+        </h1>
+        <p style="margin-bottom: 0; opacity: 0.95; font-size: 1.05rem;">
+          101+ medicines across 14 categories — delivered to your doorstep
+        </p>
+      </div>
+      <form method="GET" style="display:flex; gap: var(--space-2); align-items: center;">
+        <div style="position: relative;">
+          <i class="fas fa-search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--gray-400); font-size: 0.9rem;"></i>
+          <input type="text" name="q" class="form-control" placeholder="Search medicines, generics…" value="{{ filters.get('q','') }}"
+            style="min-width: 260px; padding-left: 40px; border-radius: 50px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        </div>
+        <button class="btn" style="background: white; color: #f5576c; font-weight: 600; border-radius: 50px; padding: var(--space-2) var(--space-5); box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          Search
+        </button>
+      </form>
+    </div>
   </div>
-  <!-- Categories -->
-  <div style="display:flex; gap:var(--space-2); flex-wrap:wrap; margin-bottom:var(--space-6);">
-    <a href="{{ url_for('pharmacy.catalog') }}" class="btn {{ 'btn-primary' if not filters.get('category') else 'btn-outline' }} btn-sm">All</a>
-    {% for cat in categories %}<a href="?category={{ cat.slug }}" class="btn {{ 'btn-primary' if filters.get('category') == cat.slug else 'btn-outline' }} btn-sm">{{ cat.name }}</a>{% endfor %}
+
+  <!-- Category Pills with Icons -->
+  {% set cat_icons = {
+    'Pain Relief': 'fa-pills',
+    'Antibiotics': 'fa-bacterium',
+    'Antifungal': 'fa-biohazard',
+    'Vitamins & Supplements': 'fa-heart-pulse',
+    'Diabetes Care': 'fa-syringe',
+    'Heart & Blood Pressure': 'fa-heart',
+    'Digestive Health': 'fa-stomach',
+    'Respiratory Care': 'fa-lungs',
+    'Skin Care': 'fa-hand-sparkles',
+    'Eye & Ear Care': 'fa-eye',
+    "Women's Health": 'fa-venus',
+    'Baby & Mother Care': 'fa-baby',
+    'First Aid': 'fa-kit-medical',
+    'Personal Care': 'fa-soap'
+  } %}
+  <div style="display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-6);">
+    <a href="{{ url_for('pharmacy.catalog') }}"
+       class="btn btn-sm"
+       style="border-radius: 50px; padding: var(--space-2) var(--space-4); font-weight: 600; display: inline-flex; align-items: center; gap: var(--space-2); transition: all 0.2s ease; {{ 'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; box-shadow: 0 2px 8px rgba(240,147,251,0.3);' if not filters.get('category') else 'border: 1.5px solid var(--gray-300); color: var(--gray-700);' }}">
+      <i class="fas fa-th-large"></i> All Medicines
+    </a>
+    {% for cat in categories %}
+    <a href="?category={{ cat.slug }}"
+       class="btn btn-sm"
+       style="border-radius: 50px; padding: var(--space-2) var(--space-4); font-weight: 600; display: inline-flex; align-items: center; gap: var(--space-2); transition: all 0.2s ease; {{ 'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; box-shadow: 0 2px 8px rgba(240,147,251,0.3);' if filters.get('category') == cat.slug else 'border: 1.5px solid var(--gray-300); color: var(--gray-700);' }}">
+      <i class="fas {{ cat_icons.get(cat.name, 'fa-pills') }}"></i>
+      {{ cat.name }}
+    </a>
+    {% endfor %}
   </div>
   {% if medicines.items %}
   <div class="grid grid-4">
     {% for med in medicines.items %}
-    <div class="card">
-      {% if med.image_url %}<img src="{{ med.image_url }}" class="card-img-top" alt="{{ med.name }}">{% else %}<div class="card-img-top" style="background:linear-gradient(135deg, var(--primary-50), var(--primary-100)); display:flex; align-items:center; justify-content:center;"><i class="fas fa-capsules" style="font-size:2.5rem; color:var(--primary);"></i></div>{% endif %}
-      <div class="card-body">
-        {% if med.requires_prescription %}<span class="badge badge-warning mb-4"><i class="fas fa-prescription"></i> Rx Required</span>{% endif %}
-        <h4 class="truncate" style="margin-bottom:var(--space-1);">{{ med.name }}</h4>
-        <p class="text-sm text-muted mb-0">{{ med.generic_name or '' }}</p>
-        <p class="text-sm text-muted">{{ med.strength }} · {{ med.pack_size }}</p>
-        <div class="flex-between mt-4">
-          <div>
-            {% if med.discount_percent > 0 %}<span class="text-sm" style="text-decoration:line-through; color:var(--gray-400);">{{ currency }}{{ med.price }}</span>{% endif %}
-            <strong style="color:var(--primary-dark); font-size:1.1rem;">{{ currency }}{{ med.selling_price }}</strong>
+    <div class="card medicine-card" style="overflow:hidden; transition: all 0.3s ease; border-radius: var(--radius-lg);">
+      <div class="medicine-img-container" style="position:relative; overflow:hidden; height:200px;">
+        {% if med.image_url %}
+        <img src="{{ med.image_url }}" class="card-img-top" alt="{{ med.name }}" style="width:100%; height:100%; object-fit:cover; transition: transform 0.3s ease;" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'300\'%3E%3Cdefs%3E%3ClinearGradient id=\'g{{ med.id }}\' x1=\'0%25\' y1=\'0%25\' x2=\'100%25\' y2=\'100%25\'%3E%3Cstop offset=\'0%25\' style=\'stop-color:%234F46E5;stop-opacity:0.2\'/%3E%3Cstop offset=\'100%25\' style=\'stop-color:%234F46E5;stop-opacity:0.05\'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill=\'url(%23g{{ med.id }})\' width=\'400\' height=\'300\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' style=\'font-size:64px\'%3E💊%3C/text%3E%3C/svg%3E';">
+        {% else %}
+        <div class="card-img-top" style="background:linear-gradient(135deg, var(--primary-50), var(--primary-100)); display:flex; align-items:center; justify-content:center; height:100%;"><i class="fas fa-capsules" style="font-size:3rem; color:var(--primary);"></i></div>
+        {% endif %}
+        
+        <!-- Stock Badge -->
+        {% if not med.in_stock %}
+        <div style="position:absolute; top:10px; right:10px;">
+          <span class="badge badge-danger" style="font-size:0.75rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">Out of Stock</span>
+        </div>
+        {% elif med.stock_quantity <= 10 %}
+        <div style="position:absolute; top:10px; right:10px;">
+          <span class="badge badge-warning" style="font-size:0.75rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">Low Stock</span>
+        </div>
+        {% endif %}
+        
+        <!-- Discount Badge -->
+        {% if med.discount_percent > 0 %}
+        <div style="position:absolute; top:10px; left:10px;">
+          <span class="badge badge-success" style="font-size:0.75rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">{{ med.discount_percent|int }}% OFF</span>
+        </div>
+        {% endif %}
+      </div>
+      
+      <div class="card-body" style="padding:var(--space-4);">
+        {% if med.requires_prescription %}
+        <div style="margin-bottom:var(--space-2);">
+          <span class="badge badge-warning" style="font-size:0.7rem;"><i class="fas fa-prescription"></i> Rx Required</span>
+        </div>
+        {% endif %}
+        
+        <h4 class="truncate" style="margin-bottom:var(--space-2); font-size:1rem; font-weight:600;">{{ med.name }}</h4>
+        
+        {% if med.generic_name %}
+        <p class="text-sm text-muted mb-0" style="font-size:0.8rem;">{{ med.generic_name }}</p>
+        {% endif %}
+        
+        <div style="display:flex; gap:var(--space-1); align-items:center; margin-top:var(--space-1); margin-bottom:var(--space-3);">
+          <span class="text-xs" style="color:var(--gray-500); font-size:0.75rem;"><i class="fas fa-weight" style="font-size:0.7rem;"></i> {{ med.strength }}</span>
+          <span style="color:var(--gray-400);">·</span>
+          <span class="text-xs" style="color:var(--gray-500); font-size:0.75rem;"><i class="fas fa-box" style="font-size:0.7rem;"></i> {{ med.pack_size }}</span>
+        </div>
+        
+        <div style="border-top:1px solid var(--gray-200); padding-top:var(--space-3); margin-top:var(--space-3);">
+          <div class="flex-between" style="align-items:center;">
+            <div>
+              {% if med.discount_percent > 0 %}
+              <div style="display:flex; flex-direction:column; gap:2px;">
+                <span class="text-xs" style="text-decoration:line-through; color:var(--gray-400); font-size:0.75rem;">{{ currency }}{{ med.price }}</span>
+                <strong style="color:var(--primary-dark); font-size:1.25rem; line-height:1;">{{ currency }}{{ med.selling_price }}</strong>
+              </div>
+              {% else %}
+              <strong style="color:var(--primary-dark); font-size:1.25rem;">{{ currency }}{{ med.selling_price }}</strong>
+              {% endif %}
+            </div>
+            
+            {% if med.in_stock %}
+            <form method="POST" action="{{ url_for('pharmacy.add_to_cart') }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="medicine_id" value="{{ med.id }}">
+              <input type="hidden" name="next" value="{{ request.url }}">
+              <button type="submit" class="btn btn-primary btn-sm" style="padding:var(--space-2) var(--space-3); display:flex; align-items:center; gap:var(--space-1);">
+                <i class="fas fa-cart-plus"></i>
+                <span style="font-size:0.8rem;">Add</span>
+              </button>
+            </form>
+            {% else %}
+            <button class="btn btn-outline btn-sm" disabled style="padding:var(--space-2) var(--space-3); opacity:0.5;">
+              <i class="fas fa-ban"></i> Unavailable
+            </button>
+            {% endif %}
           </div>
-          {% if med.in_stock %}
-          <form method="POST" action="{{ url_for('pharmacy.add_to_cart') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="medicine_id" value="{{ med.id }}"><input type="hidden" name="next" value="{{ request.url }}"><button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-cart-plus"></i></button></form>
-          {% else %}<span class="badge badge-danger">Out of Stock</span>{% endif %}
         </div>
       </div>
     </div>
     {% endfor %}
   </div>
+  
+  <style>
+    .medicine-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+    }
+    .medicine-card:hover .medicine-img-container img {
+      transform: scale(1.05);
+    }
+  </style>
   {% else %}
   <div class="empty-state"><div class="empty-icon"><i class="fas fa-capsules"></i></div><h3>No medicines found</h3><p>Try a different search or browse categories.</p></div>
   {% endif %}

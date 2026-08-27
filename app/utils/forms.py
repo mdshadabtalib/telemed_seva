@@ -12,7 +12,7 @@ from wtforms import (
 )
 from wtforms.fields import DateField
 from wtforms.validators import (
-    DataRequired, Optional, Length, NumberRange, Email, ValidationError,
+    DataRequired, Optional, Length, NumberRange, Email, ValidationError, InputRequired,
 )
 
 from .validators import StrongPassword, IndianPhone, Pincode
@@ -93,10 +93,18 @@ class AvailabilityForm(FlaskForm):
         'Day',
         coerce=int,
         choices=[(d.value, d.name.title()) for d in DayOfWeek],
-        validators=[DataRequired()],
+        validators=[InputRequired()],  # InputRequired allows 0 (Monday)
     )
-    start_time  = TimeField('Start Time', validators=[DataRequired()])
-    end_time    = TimeField('End Time',   validators=[DataRequired()])
+    start_time    = TimeField('Start Time',    validators=[DataRequired()])
+    end_time      = TimeField('End Time',      validators=[DataRequired()])
+    slot_duration = SelectField(
+        'Slot Duration',
+        coerce=int,
+        choices=[(10,'10 min'),(15,'15 min'),(20,'20 min'),(30,'30 min'),
+                 (45,'45 min'),(60,'60 min')],
+        default=30,
+        validators=[InputRequired()],  # InputRequired allows integer values including edge cases
+    )
     submit = SubmitField('Add Slot')
 
     def validate_end_time(self, field):

@@ -48,6 +48,17 @@ def send_verification_email(user) -> bool:
     verify_url = url_for('auth.verify_email', token=token, _external=True)
     platform = current_app.config.get('PLATFORM_NAME', 'TeleMed Seva')
 
+    # If SMTP not configured, print token to console for development
+    if not current_app.config.get('MAIL_USERNAME'):
+        logger.warning('[DEV MODE] Email verification link: %s', verify_url)
+        print(f'\n{"="*80}')
+        print(f'📧 DEVELOPMENT MODE - Email verification required')
+        print(f'{"="*80}')
+        print(f'User: {user.email}')
+        print(f'Verification link: {verify_url}')
+        print(f'{"="*80}\n')
+        return True  # Return True so user registration still succeeds
+
     html = _render_email_template(
         title='Verify your email address',
         greeting=f'Hello {user.display_name},',
@@ -74,6 +85,17 @@ def send_password_reset_email(user) -> bool:
     token = generate_password_reset_token(user.id)
     reset_url = url_for('auth.reset_password', token=token, _external=True)
     platform = current_app.config.get('PLATFORM_NAME', 'TeleMed Seva')
+
+    # If SMTP not configured, print token to console for development
+    if not current_app.config.get('MAIL_USERNAME'):
+        logger.warning('[DEV MODE] Password reset link: %s', reset_url)
+        print(f'\n{"="*80}')
+        print(f'🔑 DEVELOPMENT MODE - Password reset requested')
+        print(f'{"="*80}')
+        print(f'User: {user.email}')
+        print(f'Reset link: {reset_url}')
+        print(f'{"="*80}\n')
+        return True
 
     html = _render_email_template(
         title='Reset your password',

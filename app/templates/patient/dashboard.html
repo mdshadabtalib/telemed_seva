@@ -1,97 +1,189 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container">
-  <h1 style="margin-bottom:var(--space-2);">Welcome, {{ profile.first_name }}!</h1>
-  <p class="text-muted" style="margin-bottom:var(--space-8);">Here's an overview of your healthcare activity.</p>
-
-  <!-- Stats -->
-  <div class="grid grid-4 mb-8">
-    <div class="stat-card">
-      <div class="stat-icon primary"><i class="fas fa-calendar-check"></i></div>
-      <div><div class="stat-value">{{ upcoming_appointments|length }}</div><div class="stat-label">Upcoming Appointments</div></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon success"><i class="fas fa-file-prescription"></i></div>
-      <div><div class="stat-value">{{ recent_prescriptions|length }}</div><div class="stat-label">Recent Prescriptions</div></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon warning"><i class="fas fa-box"></i></div>
-      <div><div class="stat-value">{{ recent_orders|length }}</div><div class="stat-label">Recent Orders</div></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon info"><i class="fas fa-notes-medical"></i></div>
-      <div><div class="stat-value">—</div><div class="stat-label">Medical Records</div></div>
+  <!-- Header Section with Gradient Background -->
+  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: var(--radius-lg); padding: var(--space-8); margin-bottom: var(--space-8); color: white; box-shadow: 0 8px 24px rgba(102, 126, 234, 0.25);">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h1 style="margin-bottom:var(--space-2); color: white; font-size: 2rem;">Welcome, {{ profile.first_name }}! 👋</h1>
+        <p style="margin-bottom: 0; opacity: 0.95; font-size: 1.1rem;">Here's an overview of your healthcare activity</p>
+      </div>
+      <div style="font-size: 4rem; opacity: 0.2;">🏥</div>
     </div>
   </div>
 
+  <!-- Stats Cards with Gradient Backgrounds -->
+  <div class="grid grid-4 mb-8">
+    <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); transition: all 0.3s ease;">
+      <div class="stat-icon" style="background: rgba(255,255,255,0.2); color: white;">
+        <i class="fas fa-calendar-check" style="font-size: 1.5rem;"></i>
+      </div>
+      <div>
+        <div class="stat-value" style="color: white; font-size: 2rem; font-weight: 700;">{{ upcoming_appointments|length }}</div>
+        <div class="stat-label" style="color: rgba(255,255,255,0.9); font-weight: 500;">Upcoming Appointments</div>
+      </div>
+    </div>
+    
+    <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(240, 147, 251, 0.3); transition: all 0.3s ease;">
+      <div class="stat-icon" style="background: rgba(255,255,255,0.2); color: white;">
+        <i class="fas fa-file-prescription" style="font-size: 1.5rem;"></i>
+      </div>
+      <div>
+        <div class="stat-value" style="color: white; font-size: 2rem; font-weight: 700;">{{ recent_prescriptions|length }}</div>
+        <div class="stat-label" style="color: rgba(255,255,255,0.9); font-weight: 500;">Recent Prescriptions</div>
+      </div>
+    </div>
+    
+    <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3); transition: all 0.3s ease;">
+      <div class="stat-icon" style="background: rgba(255,255,255,0.2); color: white;">
+        <i class="fas fa-box" style="font-size: 1.5rem;"></i>
+      </div>
+      <div>
+        <div class="stat-value" style="color: white; font-size: 2rem; font-weight: 700;">{{ recent_orders|length }}</div>
+        <div class="stat-label" style="color: rgba(255,255,255,0.9); font-weight: 500;">Recent Orders</div>
+      </div>
+    </div>
+    
+    <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(250, 112, 154, 0.3); transition: all 0.3s ease;">
+      <div class="stat-icon" style="background: rgba(255,255,255,0.2); color: white;">
+        <i class="fas fa-notes-medical" style="font-size: 1.5rem;"></i>
+      </div>
+      <div>
+        <div class="stat-value" style="color: white; font-size: 2rem; font-weight: 700;">—</div>
+        <div class="stat-label" style="color: rgba(255,255,255,0.9); font-weight: 500;">Medical Records</div>
+      </div>
+    </div>
+  </div>
+  
+  <style>
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+    }
+  </style>
+
   <div class="grid grid-2">
     <!-- Upcoming Appointments -->
-    <div class="card">
-      <div class="card-header flex-between">
-        <span><i class="fas fa-calendar-alt"></i> Upcoming Appointments</span>
-        <a href="{{ url_for('appointments.my_appointments') }}" class="text-sm">View All →</a>
+    <div class="card" style="border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+      <div class="card-header flex-between" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: var(--space-4);">
+        <span style="display: flex; align-items: center; gap: var(--space-2); font-weight: 600;">
+          <i class="fas fa-calendar-alt"></i> Upcoming Appointments
+        </span>
+        <a href="{{ url_for('appointments.my_appointments') }}" class="text-sm" style="color: white; opacity: 0.9; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.5);">View All →</a>
       </div>
       <div class="card-body">
         {% if upcoming_appointments %}
           {% for appt in upcoming_appointments %}
-          <div style="display:flex; justify-content:space-between; align-items:center; padding:var(--space-3) 0; {% if not loop.last %}border-bottom:1px solid var(--gray-100);{% endif %}">
-            <div>
-              <strong>Dr. {{ appt.doctor.full_name }}</strong>
-              <div class="text-sm text-muted">{{ appt.appointment_date.strftime('%d %b %Y') }} at {{ appt.start_time.strftime('%I:%M %p') }}</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:var(--space-4) 0; {% if not loop.last %}border-bottom:1px solid var(--gray-100);{% endif %} transition: all 0.2s ease;">
+            <div style="display: flex; align-items: center; gap: var(--space-3);">
+              <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem;">
+                <i class="fas fa-user-doctor"></i>
+              </div>
+              <div>
+                <strong style="font-size: 1rem;">Dr. {{ appt.doctor.full_name }}</strong>
+                <div class="text-sm text-muted" style="display: flex; align-items: center; gap: var(--space-2); margin-top: 4px;">
+                  <i class="fas fa-calendar" style="font-size: 0.75rem;"></i>
+                  {{ appt.appointment_date.strftime('%d %b %Y') }} at {{ appt.start_time.strftime('%I:%M %p') }}
+                </div>
+              </div>
             </div>
-            <span class="badge badge-{{ 'success' if appt.status.value == 'confirmed' else 'warning' }}">{{ appt.status.value }}</span>
+            <span class="badge badge-{{ 'success' if appt.status.value == 'confirmed' else 'warning' }}" style="padding: var(--space-2) var(--space-3); font-size: 0.75rem;">{{ appt.status.value }}</span>
           </div>
           {% endfor %}
         {% else %}
-          <div class="empty-state" style="padding:var(--space-8);">
-            <p>No upcoming appointments</p>
-            <a href="{{ url_for('appointments.search_doctors') }}" class="btn btn-primary btn-sm"><i class="fas fa-search"></i> Find a Doctor</a>
+          <div class="empty-state" style="padding:var(--space-8); text-align: center;">
+            <div style="font-size: 3rem; opacity: 0.3; margin-bottom: var(--space-2);">📅</div>
+            <p style="color: var(--gray-600); margin-bottom: var(--space-4);">No upcoming appointments</p>
+            <a href="{{ url_for('appointments.search_doctors') }}" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: var(--space-2);">
+              <i class="fas fa-search"></i> Find a Doctor
+            </a>
           </div>
         {% endif %}
       </div>
     </div>
 
     <!-- Recent Prescriptions -->
-    <div class="card">
-      <div class="card-header flex-between">
-        <span><i class="fas fa-prescription"></i> Recent Prescriptions</span>
-        <a href="{{ url_for('prescriptions.my_prescriptions') }}" class="text-sm">View All →</a>
+    <div class="card" style="border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+      <div class="card-header flex-between" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: var(--space-4);">
+        <span style="display: flex; align-items: center; gap: var(--space-2); font-weight: 600;">
+          <i class="fas fa-prescription"></i> Recent Prescriptions
+        </span>
+        <a href="{{ url_for('prescriptions.my_prescriptions') }}" class="text-sm" style="color: white; opacity: 0.9; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.5);">View All →</a>
       </div>
       <div class="card-body">
         {% if recent_prescriptions %}
           {% for rx in recent_prescriptions %}
-          <div style="display:flex; justify-content:space-between; align-items:center; padding:var(--space-3) 0; {% if not loop.last %}border-bottom:1px solid var(--gray-100);{% endif %}">
-            <div>
-              <a href="{{ url_for('prescriptions.view', prescription_id=rx.id) }}"><strong>{{ rx.prescription_uid }}</strong></a>
-              <div class="text-sm text-muted">{{ rx.created_at.strftime('%d %b %Y') }}</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:var(--space-4) 0; {% if not loop.last %}border-bottom:1px solid var(--gray-100);{% endif %}">
+            <div style="display: flex; align-items: center; gap: var(--space-3);">
+              <div style="width: 48px; height: 48px; border-radius: var(--radius-md); background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem;">
+                <i class="fas fa-pills"></i>
+              </div>
+              <div>
+                <a href="{{ url_for('prescriptions.view', prescription_id=rx.id) }}" style="text-decoration: none;">
+                  <strong style="font-size: 1rem; color: var(--primary);">{{ rx.prescription_uid }}</strong>
+                </a>
+                <div class="text-sm text-muted" style="display: flex; align-items: center; gap: var(--space-2); margin-top: 4px;">
+                  <i class="fas fa-clock" style="font-size: 0.75rem;"></i>
+                  {{ rx.created_at.strftime('%d %b %Y') }}
+                </div>
+              </div>
             </div>
-            <span class="badge badge-primary">{{ rx.items|length }} medicines</span>
+            <span class="badge badge-primary" style="padding: var(--space-2) var(--space-3); font-size: 0.75rem;">{{ rx.items|length }} medicines</span>
           </div>
           {% endfor %}
         {% else %}
-          <div class="empty-state" style="padding:var(--space-8);"><p>No prescriptions yet</p></div>
+          <div class="empty-state" style="padding:var(--space-8); text-align: center;">
+            <div style="font-size: 3rem; opacity: 0.3; margin-bottom: var(--space-2);">💊</div>
+            <p style="color: var(--gray-600);">No prescriptions yet</p>
+          </div>
         {% endif %}
       </div>
     </div>
   </div>
 
-  <!-- Quick Actions -->
+  <!-- Quick Actions with Enhanced Design -->
   <div style="margin-top:var(--space-8);">
-    <h3>Quick Actions</h3>
+    <h3 style="margin-bottom: var(--space-4); font-size: 1.5rem; font-weight: 600;">Quick Actions</h3>
     <div class="grid grid-4 mt-4">
-      <a href="{{ url_for('appointments.search_doctors') }}" class="feature-card" style="text-decoration:none;">
-        <div class="feature-icon"><i class="fas fa-user-doctor"></i></div><h4>Find a Doctor</h4>
+      <a href="{{ url_for('appointments.search_doctors') }}" class="feature-card" style="text-decoration:none; border-radius: var(--radius-lg); padding: var(--space-6); transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.08); background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);">
+        <div class="feature-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-lg); margin-bottom: var(--space-3); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">
+          <i class="fas fa-user-doctor" style="font-size: 1.75rem;"></i>
+        </div>
+        <h4 style="margin-bottom: var(--space-1); font-size: 1.1rem; font-weight: 600;">Find a Doctor</h4>
+        <p style="font-size: 0.85rem; color: var(--gray-600); margin: 0;">Search and book appointments</p>
       </a>
-      <a href="{{ url_for('pharmacy.catalog') }}" class="feature-card" style="text-decoration:none;">
-        <div class="feature-icon"><i class="fas fa-capsules"></i></div><h4>Order Medicines</h4>
+      
+      <a href="{{ url_for('pharmacy.catalog') }}" class="feature-card" style="text-decoration:none; border-radius: var(--radius-lg); padding: var(--space-6); transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.08); background: linear-gradient(135deg, rgba(240, 147, 251, 0.05) 0%, rgba(245, 87, 108, 0.05) 100%);">
+        <div class="feature-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-lg); margin-bottom: var(--space-3); box-shadow: 0 4px 12px rgba(240, 147, 251, 0.3);">
+          <i class="fas fa-capsules" style="font-size: 1.75rem;"></i>
+        </div>
+        <h4 style="margin-bottom: var(--space-1); font-size: 1.1rem; font-weight: 600;">Order Medicines</h4>
+        <p style="font-size: 0.85rem; color: var(--gray-600); margin: 0;">Browse pharmacy catalog</p>
       </a>
-      <a href="{{ url_for('patient.medical_records') }}" class="feature-card" style="text-decoration:none;">
-        <div class="feature-icon"><i class="fas fa-file-medical"></i></div><h4>Medical Records</h4>
+      
+      <a href="{{ url_for('patient.medical_records') }}" class="feature-card" style="text-decoration:none; border-radius: var(--radius-lg); padding: var(--space-6); transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.08); background: linear-gradient(135deg, rgba(79, 172, 254, 0.05) 0%, rgba(0, 242, 254, 0.05) 100%);">
+        <div class="feature-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-lg); margin-bottom: var(--space-3); box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);">
+          <i class="fas fa-file-medical" style="font-size: 1.75rem;"></i>
+        </div>
+        <h4 style="margin-bottom: var(--space-1); font-size: 1.1rem; font-weight: 600;">Medical Records</h4>
+        <p style="font-size: 0.85rem; color: var(--gray-600); margin: 0;">View your health history</p>
       </a>
-      <a href="{{ url_for('patient.profile') }}" class="feature-card" style="text-decoration:none;">
-        <div class="feature-icon"><i class="fas fa-user-cog"></i></div><h4>My Profile</h4>
+      
+      <a href="{{ url_for('patient.profile') }}" class="feature-card" style="text-decoration:none; border-radius: var(--radius-lg); padding: var(--space-6); transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.08); background: linear-gradient(135deg, rgba(250, 112, 154, 0.05) 0%, rgba(254, 225, 64, 0.05) 100%);">
+        <div class="feature-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-lg); margin-bottom: var(--space-3); box-shadow: 0 4px 12px rgba(250, 112, 154, 0.3);">
+          <i class="fas fa-user-cog" style="font-size: 1.75rem;"></i>
+        </div>
+        <h4 style="margin-bottom: var(--space-1); font-size: 1.1rem; font-weight: 600;">My Profile</h4>
+        <p style="font-size: 0.85rem; color: var(--gray-600); margin: 0;">Update personal information</p>
       </a>
     </div>
   </div>
+  
+  <style>
+    .feature-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.12) !important;
+    }
+  </style>
 </div>
 {% endblock %}

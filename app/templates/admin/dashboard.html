@@ -1,149 +1,283 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container">
-  <div class="flex-between mb-6">
-    <div>
-      <h1>Admin Dashboard</h1>
-      <p class="text-muted mb-0">Platform overview, system stats, and administrative controls.</p>
-    </div>
-    <div class="flex gap-2">
-      <a href="{{ url_for('admin.verifications') }}" class="btn btn-outline btn-sm">
-        <i class="fas fa-user-check"></i> Verifications
-      </a>
-      <a href="{{ url_for('admin.medicines') }}" class="btn btn-primary btn-sm">
-        <i class="fas fa-capsules"></i> Manage Medicines
-      </a>
+
+  <!-- Admin Hero Header -->
+  <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); border-radius: var(--radius-lg); padding: var(--space-8); margin-bottom: var(--space-8); color: white; box-shadow: 0 8px 32px rgba(15, 52, 96, 0.4);">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-4);">
+      <div>
+        <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-2);">
+          <div style="background: rgba(255,255,255,0.1); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); font-size: 0.8rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.15);">
+            🛡️ Administrator
+          </div>
+        </div>
+        <h1 style="color: white; margin-bottom: var(--space-2); font-size: 2rem;">Admin Control Panel</h1>
+        <p style="opacity: 0.8; margin: 0; font-size: 1rem;">Platform overview, verifications, and administrative controls</p>
+      </div>
+      <div style="display: flex; gap: var(--space-3);">
+        <a href="{{ url_for('admin.verifications') }}" class="btn" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-4); backdrop-filter: blur(4px);">
+          <i class="fas fa-user-check"></i> Verifications
+          {% if stats.pending_verifications > 0 %}
+          <span style="background: #ef4444; color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700;">{{ stats.pending_verifications }}</span>
+          {% endif %}
+        </a>
+        <a href="{{ url_for('admin.medicines') }}" class="btn" style="background: #e94560; color: white; border: none; display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-4); box-shadow: 0 2px 8px rgba(233,69,96,0.4);">
+          <i class="fas fa-capsules"></i> Manage Medicines
+        </a>
+      </div>
     </div>
   </div>
 
-  <!-- Key Performance Indicators -->
+  <!-- Row 1: Primary KPIs -->
+  <div class="grid grid-4 mb-6">
+    <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; box-shadow: 0 4px 16px rgba(102,126,234,0.35); transition: all 0.3s ease; cursor: pointer;">
+      <div style="background: rgba(255,255,255,0.15); border-radius: var(--radius-md); width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3);">
+        <i class="fas fa-users" style="font-size: 1.4rem; color: white;"></i>
+      </div>
+      <div>
+        <div style="font-size: 2.25rem; font-weight: 700; color: white; line-height: 1;">{{ stats.total_patients }}</div>
+        <div style="color: rgba(255,255,255,0.85); font-weight: 500; margin-top: 4px;">Total Patients</div>
+      </div>
+    </div>
+
+    <div class="stat-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; border: none; box-shadow: 0 4px 16px rgba(17,153,142,0.35); transition: all 0.3s ease;">
+      <div style="background: rgba(255,255,255,0.15); border-radius: var(--radius-md); width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3);">
+        <i class="fas fa-user-md" style="font-size: 1.4rem; color: white;"></i>
+      </div>
+      <div>
+        <div style="font-size: 2.25rem; font-weight: 700; color: white; line-height: 1;">{{ stats.total_doctors }}</div>
+        <div style="color: rgba(255,255,255,0.85); font-weight: 500; margin-top: 4px;">Registered Doctors</div>
+      </div>
+    </div>
+
+    <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; box-shadow: 0 4px 16px rgba(240,147,251,0.35); transition: all 0.3s ease;">
+      <div style="background: rgba(255,255,255,0.15); border-radius: var(--radius-md); width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3);">
+        <i class="fas fa-id-card" style="font-size: 1.4rem; color: white;"></i>
+      </div>
+      <div>
+        <div style="font-size: 2.25rem; font-weight: 700; color: white; line-height: 1;">{{ stats.pending_verifications }}</div>
+        <div style="color: rgba(255,255,255,0.85); font-weight: 500; margin-top: 4px;">Pending Verifications</div>
+      </div>
+    </div>
+
+    <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; border: none; box-shadow: 0 4px 16px rgba(250,112,154,0.35); transition: all 0.3s ease;">
+      <div style="background: rgba(255,255,255,0.15); border-radius: var(--radius-md); width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3);">
+        <i class="fas fa-indian-rupee-sign" style="font-size: 1.4rem; color: white;"></i>
+      </div>
+      <div>
+        <div style="font-size: 2.25rem; font-weight: 700; color: white; line-height: 1; font-size: 1.5rem;">{{ currency }}{{ "%.0f"|format(stats.total_revenue|default(0)) }}</div>
+        <div style="color: rgba(255,255,255,0.85); font-weight: 500; margin-top: 4px;">Total Revenue</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2: Operational Stats -->
   <div class="grid grid-4 mb-8">
-    <div class="stat-card">
-      <div class="stat-icon primary"><i class="fas fa-users"></i></div>
+    <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none; box-shadow: 0 4px 16px rgba(79,172,254,0.3); transition: all 0.3s ease;">
+      <div style="background: rgba(255,255,255,0.15); border-radius: var(--radius-md); width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3);">
+        <i class="fas fa-calendar-check" style="font-size: 1.4rem; color: white;"></i>
+      </div>
       <div>
-        <div class="stat-value">{{ stats.total_patients }}</div>
-        <div class="stat-label">Total Patients</div>
+        <div style="font-size: 2.25rem; font-weight: 700; color: white; line-height: 1;">{{ stats.total_appointments }}</div>
+        <div style="color: rgba(255,255,255,0.85); font-weight: 500; margin-top: 4px;">Total Appointments</div>
       </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-icon info"><i class="fas fa-user-md"></i></div>
+
+    <div class="stat-card" style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); color: white; border: none; box-shadow: 0 4px 16px rgba(161,140,209,0.3); transition: all 0.3s ease;">
+      <div style="background: rgba(255,255,255,0.15); border-radius: var(--radius-md); width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3);">
+        <i class="fas fa-clock" style="font-size: 1.4rem; color: white;"></i>
+      </div>
       <div>
-        <div class="stat-value">{{ stats.total_doctors }}</div>
-        <div class="stat-label">Registered Doctors</div>
+        <div style="font-size: 2.25rem; font-weight: 700; color: white; line-height: 1;">{{ stats.active_appointments }}</div>
+        <div style="color: rgba(255,255,255,0.85); font-weight: 500; margin-top: 4px;">Active / Upcoming</div>
       </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-icon warning"><i class="fas fa-id-card"></i></div>
+
+    <div class="stat-card" style="background: linear-gradient(135deg, #fddb92 0%, #d1fdff 100%); color: #374151; border: none; box-shadow: 0 4px 16px rgba(253,219,146,0.4); transition: all 0.3s ease;">
+      <div style="background: rgba(0,0,0,0.08); border-radius: var(--radius-md); width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3);">
+        <i class="fas fa-box-open" style="font-size: 1.4rem; color: #374151;"></i>
+      </div>
       <div>
-        <div class="stat-value">{{ stats.pending_verifications }}</div>
-        <div class="stat-label">Pending Verifications</div>
+        <div style="font-size: 2.25rem; font-weight: 700; line-height: 1;">{{ stats.pending_orders }}</div>
+        <div style="color: #6b7280; font-weight: 500; margin-top: 4px;">Orders in Pipeline</div>
       </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-icon success"><i class="fas fa-indian-rupee-sign"></i></div>
+
+    <div class="stat-card" style="background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); color: #374151; border: none; box-shadow: 0 4px 16px rgba(224,195,252,0.4); transition: all 0.3s ease;">
+      <div style="background: rgba(0,0,0,0.08); border-radius: var(--radius-md); width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3);">
+        <i class="fas fa-ticket-alt" style="font-size: 1.4rem; color: #374151;"></i>
+      </div>
       <div>
-        <div class="stat-value">{{ currency }}{{ "%.2f"|format(stats.total_revenue|default(0)) }}</div>
-        <div class="stat-label">Total Revenue</div>
+        <div style="font-size: 2.25rem; font-weight: 700; line-height: 1;">{{ stats.open_tickets }}</div>
+        <div style="color: #6b7280; font-weight: 500; margin-top: 4px;">Open Support Tickets</div>
       </div>
     </div>
   </div>
 
-  <div class="grid grid-4 mb-8">
-    <div class="stat-card">
-      <div class="stat-icon primary"><i class="fas fa-calendar-check"></i></div>
-      <div>
-        <div class="stat-value">{{ stats.total_appointments }}</div>
-        <div class="stat-label">Total Appointments</div>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon info"><i class="fas fa-clock"></i></div>
-      <div>
-        <div class="stat-value">{{ stats.active_appointments }}</div>
-        <div class="stat-label">Active / Upcoming</div>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon warning"><i class="fas fa-box-open"></i></div>
-      <div>
-        <div class="stat-value">{{ stats.pending_orders }}</div>
-        <div class="stat-label">Orders in Pipeline</div>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon danger"><i class="fas fa-ticket-alt"></i></div>
-      <div>
-        <div class="stat-value">{{ stats.open_tickets }}</div>
-        <div class="stat-label">Open Support Tickets</div>
-      </div>
-    </div>
-  </div>
+  <style>
+    .stat-card:hover { transform: translateY(-4px); }
+  </style>
 
-  <!-- Administrative Sections Navigation -->
+  <!-- Section Title -->
+  <h3 style="font-size: 1.4rem; font-weight: 700; color: var(--gray-800); margin-bottom: var(--space-5); display: flex; align-items: center; gap: var(--space-3);">
+    <span style="width: 4px; height: 28px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 2px; display: inline-block;"></span>
+    Administrative Sections
+  </h3>
+
+  <!-- Admin Action Cards -->
   <div class="grid grid-3">
-    <div class="card">
-      <div class="card-body">
-        <h4><i class="fas fa-user-shield text-primary"></i> Doctor Verification</h4>
-        <p class="text-sm text-muted">Review medical credentials, licenses, and background proofs for pending doctor registrations.</p>
-        <a href="{{ url_for('admin.verifications') }}" class="btn btn-outline-primary btn-sm">Review ({{ stats.pending_verifications }})</a>
+
+    <!-- Doctor Verification -->
+    <div class="card" style="border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.07); transition: all 0.3s ease; border: 1px solid var(--gray-100);">
+      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: var(--space-5); display: flex; align-items: center; gap: var(--space-3);">
+        <div style="background: rgba(255,255,255,0.2); border-radius: var(--radius-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <i class="fas fa-user-shield" style="color: white; font-size: 1.3rem;"></i>
+        </div>
+        <h4 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">Doctor Verification</h4>
+      </div>
+      <div class="card-body" style="padding: var(--space-5);">
+        <p style="color: var(--gray-600); font-size: 0.88rem; margin-bottom: var(--space-4); line-height: 1.6;">Review medical credentials, licenses, and background proofs for pending doctor registrations.</p>
+        <a href="{{ url_for('admin.verifications') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); box-shadow: 0 2px 8px rgba(102,126,234,0.3);">
+          <i class="fas fa-eye"></i> Review ({{ stats.pending_verifications }})
+        </a>
       </div>
     </div>
-    <div class="card">
-      <div class="card-body">
-        <h4><i class="fas fa-user-friends text-info"></i> User Management</h4>
-        <p class="text-sm text-muted">View all platform users, manage access permissions, and activate/deactivate accounts.</p>
-        <a href="{{ url_for('admin.users') }}" class="btn btn-outline btn-sm">Manage Users</a>
+
+    <!-- User Management -->
+    <div class="card" style="border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.07); transition: all 0.3s ease; border: 1px solid var(--gray-100);">
+      <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: var(--space-5); display: flex; align-items: center; gap: var(--space-3);">
+        <div style="background: rgba(255,255,255,0.2); border-radius: var(--radius-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <i class="fas fa-users-cog" style="color: white; font-size: 1.3rem;"></i>
+        </div>
+        <h4 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">User Management</h4>
+      </div>
+      <div class="card-body" style="padding: var(--space-5);">
+        <p style="color: var(--gray-600); font-size: 0.88rem; margin-bottom: var(--space-4); line-height: 1.6;">View all platform users, manage access permissions, and activate/deactivate accounts.</p>
+        <a href="{{ url_for('admin.users') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none; display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); box-shadow: 0 2px 8px rgba(79,172,254,0.3);">
+          <i class="fas fa-users"></i> Manage Users
+        </a>
       </div>
     </div>
-    <div class="card">
-      <div class="card-body">
-        <h4><i class="fas fa-pills text-success"></i> Pharmacy Inventory</h4>
-        <p class="text-sm text-muted">Add new medicines, adjust stock levels, set prescription requirements, and track reorders.</p>
-        <a href="{{ url_for('admin.medicines') }}" class="btn btn-outline btn-sm">Manage Catalog</a>
+
+    <!-- Pharmacy Inventory -->
+    <div class="card" style="border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.07); transition: all 0.3s ease; border: 1px solid var(--gray-100);">
+      <div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: var(--space-5); display: flex; align-items: center; gap: var(--space-3);">
+        <div style="background: rgba(255,255,255,0.2); border-radius: var(--radius-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <i class="fas fa-pills" style="color: white; font-size: 1.3rem;"></i>
+        </div>
+        <h4 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">Pharmacy Inventory</h4>
+      </div>
+      <div class="card-body" style="padding: var(--space-5);">
+        <p style="color: var(--gray-600); font-size: 0.88rem; margin-bottom: var(--space-4); line-height: 1.6;">Add new medicines, adjust stock levels, set prescription requirements, and track reorders.</p>
+        <a href="{{ url_for('admin.medicines') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; border: none; display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); box-shadow: 0 2px 8px rgba(17,153,142,0.3);">
+          <i class="fas fa-boxes"></i> Manage Catalog
+        </a>
       </div>
     </div>
-    <div class="card">
-      <div class="card-body">
-        <h4><i class="fas fa-shipping-fast text-warning"></i> Order Fulfillment</h4>
-        <p class="text-sm text-muted">Process pharmacy orders, verify uploaded prescriptions, and update delivery statuses.</p>
-        <a href="{{ url_for('admin.orders') }}" class="btn btn-outline btn-sm">View Orders</a>
+
+    <!-- Order Fulfillment -->
+    <div class="card" style="border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.07); transition: all 0.3s ease; border: 1px solid var(--gray-100);">
+      <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: var(--space-5); display: flex; align-items: center; gap: var(--space-3);">
+        <div style="background: rgba(255,255,255,0.2); border-radius: var(--radius-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <i class="fas fa-shipping-fast" style="color: white; font-size: 1.3rem;"></i>
+        </div>
+        <h4 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">Order Fulfillment</h4>
+      </div>
+      <div class="card-body" style="padding: var(--space-5);">
+        <p style="color: var(--gray-600); font-size: 0.88rem; margin-bottom: var(--space-4); line-height: 1.6;">Process pharmacy orders, verify uploaded prescriptions, and update delivery statuses.</p>
+        <a href="{{ url_for('admin.orders') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); box-shadow: 0 2px 8px rgba(240,147,251,0.3);">
+          <i class="fas fa-truck"></i> View Orders
+        </a>
       </div>
     </div>
-    <div class="card">
-      <div class="card-body">
-        <h4><i class="fas fa-undo-alt text-danger"></i> Refund Management</h4>
-        <p class="text-sm text-muted">Review and process refund requests for cancelled appointments and orders.</p>
-        <a href="{{ url_for('admin.refunds') }}" class="btn btn-outline btn-sm">Process Refunds ({{ stats.pending_refunds }})</a>
+
+    <!-- Refund Management -->
+    <div class="card" style="border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.07); transition: all 0.3s ease; border: 1px solid var(--gray-100);">
+      <div style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); padding: var(--space-5); display: flex; align-items: center; gap: var(--space-3);">
+        <div style="background: rgba(255,255,255,0.2); border-radius: var(--radius-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <i class="fas fa-undo-alt" style="color: white; font-size: 1.3rem;"></i>
+        </div>
+        <h4 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">Refund Management</h4>
+      </div>
+      <div class="card-body" style="padding: var(--space-5);">
+        <p style="color: var(--gray-600); font-size: 0.88rem; margin-bottom: var(--space-4); line-height: 1.6;">Review and process refund requests for cancelled appointments and orders.</p>
+        <a href="{{ url_for('admin.refunds') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; border: none; display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); box-shadow: 0 2px 8px rgba(250,112,154,0.3);">
+          <i class="fas fa-receipt"></i> Process Refunds ({{ stats.pending_refunds }})
+        </a>
       </div>
     </div>
-    <div class="card">
-      <div class="card-body">
-        <h4><i class="fas fa-headset text-info"></i> Support Helpdesk</h4>
-        <p class="text-sm text-muted">Track customer issues, assign tickets, and resolve patient or doctor inquiries.</p>
-        <a href="{{ url_for('admin.tickets') }}" class="btn btn-outline btn-sm">Support Tickets</a>
+
+    <!-- Support Helpdesk -->
+    <div class="card" style="border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.07); transition: all 0.3s ease; border: 1px solid var(--gray-100);">
+      <div style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); padding: var(--space-5); display: flex; align-items: center; gap: var(--space-3);">
+        <div style="background: rgba(255,255,255,0.2); border-radius: var(--radius-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <i class="fas fa-headset" style="color: white; font-size: 1.3rem;"></i>
+        </div>
+        <h4 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">Support Helpdesk</h4>
+      </div>
+      <div class="card-body" style="padding: var(--space-5);">
+        <p style="color: var(--gray-600); font-size: 0.88rem; margin-bottom: var(--space-4); line-height: 1.6;">Track customer issues, assign tickets, and resolve patient or doctor inquiries.</p>
+        <a href="{{ url_for('admin.tickets') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); color: white; border: none; display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); box-shadow: 0 2px 8px rgba(161,140,209,0.3);">
+          <i class="fas fa-ticket-alt"></i> Support Tickets
+        </a>
       </div>
     </div>
-    <div class="card">
-      <div class="card-body">
-        <h4><i class="fas fa-history text-muted"></i> Security & Audit Logs</h4>
-        <p class="text-sm text-muted">Inspect security audit trails, sensitive action logs, and system traceability history.</p>
-        <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline btn-sm">Audit Trails</a>
+
+    <!-- Audit Logs -->
+    <div class="card" style="border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.07); transition: all 0.3s ease; border: 1px solid var(--gray-100);">
+      <div style="background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%); padding: var(--space-5); display: flex; align-items: center; gap: var(--space-3);">
+        <div style="background: rgba(255,255,255,0.15); border-radius: var(--radius-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <i class="fas fa-history" style="color: white; font-size: 1.3rem;"></i>
+        </div>
+        <h4 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">Security &amp; Audit Logs</h4>
+      </div>
+      <div class="card-body" style="padding: var(--space-5);">
+        <p style="color: var(--gray-600); font-size: 0.88rem; margin-bottom: var(--space-4); line-height: 1.6;">Inspect security audit trails, sensitive action logs, and system traceability history.</p>
+        <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%); color: white; border: none; display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); box-shadow: 0 2px 8px rgba(45,55,72,0.3);">
+          <i class="fas fa-search"></i> Audit Trails
+        </a>
       </div>
     </div>
-    <div class="card">
-      <div class="card-body">
-        <h4><i class="fas fa-stethoscope text-primary"></i> Specialties</h4>
-        <p class="text-sm text-muted">Manage doctor specialties and medical fields available on the platform.</p>
-        <a href="{{ url_for('admin.specialties') }}" class="btn btn-outline btn-sm">Manage Specialties</a>
+
+    <!-- Specialties -->
+    <div class="card" style="border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.07); transition: all 0.3s ease; border: 1px solid var(--gray-100);">
+      <div style="background: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%); padding: var(--space-5); display: flex; align-items: center; gap: var(--space-3);">
+        <div style="background: rgba(255,255,255,0.2); border-radius: var(--radius-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <i class="fas fa-stethoscope" style="color: white; font-size: 1.3rem;"></i>
+        </div>
+        <h4 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">Medical Specialties</h4>
+      </div>
+      <div class="card-body" style="padding: var(--space-5);">
+        <p style="color: var(--gray-600); font-size: 0.88rem; margin-bottom: var(--space-4); line-height: 1.6;">Manage doctor specialties and medical fields available on the platform (42 active).</p>
+        <a href="{{ url_for('admin.specialties') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%); color: white; border: none; display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); box-shadow: 0 2px 8px rgba(0,114,255,0.3);">
+          <i class="fas fa-list-alt"></i> Manage Specialties
+        </a>
       </div>
     </div>
-    <div class="card">
-      <div class="card-body">
-        <h4><i class="fas fa-tags text-success"></i> Medicine Categories</h4>
-        <p class="text-sm text-muted">Organize pharmacy inventory into categories for better navigation and search.</p>
-        <a href="{{ url_for('admin.medicine_categories') }}" class="btn btn-outline btn-sm">Manage Categories</a>
+
+    <!-- Medicine Categories -->
+    <div class="card" style="border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.07); transition: all 0.3s ease; border: 1px solid var(--gray-100);">
+      <div style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); padding: var(--space-5); display: flex; align-items: center; gap: var(--space-3);">
+        <div style="background: rgba(255,255,255,0.2); border-radius: var(--radius-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <i class="fas fa-tags" style="color: white; font-size: 1.3rem;"></i>
+        </div>
+        <h4 style="color: white; margin: 0; font-size: 1.05rem; font-weight: 600;">Medicine Categories</h4>
+      </div>
+      <div class="card-body" style="padding: var(--space-5);">
+        <p style="color: var(--gray-600); font-size: 0.88rem; margin-bottom: var(--space-4); line-height: 1.6;">Organize pharmacy inventory into categories for better navigation and search.</p>
+        <a href="{{ url_for('admin.medicine_categories') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: white; border: none; display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); box-shadow: 0 2px 8px rgba(246,211,101,0.3);">
+          <i class="fas fa-folder-open"></i> Manage Categories
+        </a>
       </div>
     </div>
+
   </div>
+
+  <style>
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+    }
+  </style>
 </div>
 {% endblock %}

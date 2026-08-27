@@ -47,6 +47,11 @@ def dashboard():
 def profile():
     p = current_user.doctor_profile
     form = DoctorProfileForm(obj=p)
+    
+    # Populate specialty choices
+    from ..models.doctor import Specialty
+    specialties = Specialty.query.filter_by(is_active=True).order_by(Specialty.name).all()
+    form.specialty_id.choices = [('', 'Select Specialty...')] + [(s.id, s.name) for s in specialties]
 
     if form.validate_on_submit():
         p.first_name          = form.first_name.data.strip()
@@ -60,7 +65,7 @@ def profile():
         p.consultation_fee    = form.consultation_fee.data or 0
         p.consultation_duration = form.consultation_duration.data or 30
         if form.specialty_id.data:
-            p.specialty_id = form.specialty_id.data or None
+            p.specialty_id = form.specialty_id.data
 
         if form.avatar.data:
             filename = save_upload(form.avatar.data, 'avatars',
@@ -69,7 +74,7 @@ def profile():
                 p.avatar = filename
 
         db.session.commit()
-        flash('Profile updated.', 'success')
+        flash('Profile updated successfully!', 'success')
         return redirect(url_for('doctor.profile'))
 
     return render_template(
@@ -133,41 +138,68 @@ def availability():
     p = current_user.doctor_profile
     form = AvailabilityForm()
 
+    # Pre-populate slot_duration default from doctor profile
+    if request.method == 'GET':
+        form.slot_duration.data = p.consultation_duration or 30
+
     if form.validate_on_submit():
-        day_enum   = DayOfWeek(form.day_of_week.data)
-        start_time = form.start_time.data
-        end_time   = form.end_time.data
+        day_enum      = DayOfWeek(form.day_of_week.data)
+        start_time    = form.start_time.data
+        end_time      = form.end_time.data
+        slot_duration = form.slot_duration.data
 
         existing = Availability.query.filter_by(
             doctor_id=p.id, day_of_week=day_enum, start_time=start_time
         ).first()
 
         if existing:
-            existing.end_time = end_time
-            existing.slot_duration = p.consultation_duration
-            existing.is_active = True
+            existing.end_time      = end_time
+            existing.slot_duration = slot_duration
+            existing.is_active     = True
+            flash('Availability slot updated.', 'success')
         else:
             avail = Availability(
                 doctor_id=p.id,
                 day_of_week=day_enum,
                 start_time=start_time,
                 end_time=end_time,
-                slot_duration=p.consultation_duration,
+                slot_duration=slot_duration,
             )
             db.session.add(avail)
+            flash('Availability slot added.', 'success')
 
         db.session.commit()
-        flash('Availability updated.', 'success')
         return redirect(url_for('doctor.availability'))
 
-    slots = Availability.query.filter_by(doctor_id=p.id).order_by(
+    # Group slots by day for the weekly calendar view
+    all_slots = Availability.query.filter_by(doctor_id=p.id).order_by(
         Availability.day_of_week, Availability.start_time
     ).all()
 
+    # Build dict: day_value -> list of slots
+    slots_by_day = {d: [] for d in DayOfWeek}
+    for slot in all_slots:
+        slots_by_day[slot.day_of_week].append(slot)
+
     return render_template(
         'doctor/availability.html', title='Manage Availability',
-        profile=p, slots=slots, days=DayOfWeek, form=form,
+        profile=p, slots=all_slots, slots_by_day=slots_by_day,
+        days=DayOfWeek, form=form,
     )
+
+
+@doctor_bp.route('/availability/<int:avail_id>/toggle', methods=['POST'])
+@role_required(UserRole.DOCTOR)
+def toggle_slot(avail_id):
+    """Toggle a slot between active and inactive."""
+    avail = Availability.query.filter_by(
+        id=avail_id, doctor_id=current_user.doctor_profile.id
+    ).first_or_404()
+    avail.is_active = not avail.is_active
+    db.session.commit()
+    state = 'activated' if avail.is_active else 'paused'
+    flash(f'Slot {state}.', 'info')
+    return redirect(url_for('doctor.availability'))
 
 
 @doctor_bp.route('/availability/<int:avail_id>/delete', methods=['POST'])

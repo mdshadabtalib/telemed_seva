@@ -1,27 +1,656 @@
 {% extends "base.html" %}
+
 {% block content %}
-<div class="container">
-  <h1 class="mb-6">Manage Availability</h1>
-  <div class="grid grid-2">
-    <div class="card"><div class="card-body">
-      <h3 class="mb-4">Add Availability Slot</h3>
-      <form method="POST"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <div class="form-group"><label class="form-label">Day of Week</label><select name="day_of_week" class="form-control" required>{% for d in days %}<option value="{{ d.value }}">{{ d.name|title }}</option>{% endfor %}</select></div>
-        <div class="form-row"><div class="form-group"><label class="form-label">Start Time</label><input type="time" name="start_time" class="form-control" required></div><div class="form-group"><label class="form-label">End Time</label><input type="time" name="end_time" class="form-control" required></div></div>
-        <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add Slot</button>
-      </form>
-    </div></div>
-    <div class="card"><div class="card-body">
-      <h3 class="mb-4">Current Schedule</h3>
-      {% if slots %}
-      {% for slot in slots %}
-      <div style="display:flex; justify-content:space-between; align-items:center; padding:var(--space-3) 0; border-bottom:1px solid var(--gray-100);">
-        <div><strong>{{ slot.day_of_week.name|title }}</strong><span class="text-muted" style="margin-left:var(--space-3);">{{ slot.start_time.strftime('%I:%M %p') }} — {{ slot.end_time.strftime('%I:%M %p') }}</span></div>
-        <form method="POST" action="{{ url_for('doctor.delete_availability', avail_id=slot.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="btn btn-outline btn-sm text-danger"><i class="fas fa-trash"></i></button></form>
+<div class="container" style="max-width: 1100px;">
+
+  <!-- Page Header -->
+  <div style="background: linear-gradient(135deg, #0f3460 0%, #16213e 60%, #1a1a2e 100%);
+              border-radius: 16px; padding: 36px 40px; margin-bottom: 32px;
+              color: white; box-shadow: 0 8px 32px rgba(15,52,96,0.35);">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+      <div>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+          <div style="background:rgba(255,255,255,0.12); border-radius:10px;
+                      width:48px; height:48px; display:flex; align-items:center;
+                      justify-content:center;">
+            <i class="fas fa-calendar-alt" style="font-size:1.4rem; color:white;"></i>
+          </div>
+          <div>
+            <h1 style="color:white; margin:0; font-size:1.8rem; font-weight:700;">Manage Availability</h1>
+            <p style="margin:0; opacity:0.8; font-size:0.95rem;">Set your weekly schedule — patients book from these slots</p>
+          </div>
+        </div>
       </div>
-      {% endfor %}
-      {% else %}<p class="text-muted">No availability slots configured yet.</p>{% endif %}
-    </div></div>
+      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+        <!-- Global availability toggle -->
+        <form method="POST" action="{{ url_for('doctor.toggle_availability') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit"
+            style="padding:10px 20px; border-radius:50px; font-weight:600; font-size:0.9rem;
+                   cursor:pointer; display:flex; align-items:center; gap:8px; border:2px solid white;
+                   {% if profile.is_available %}
+                     background:rgba(16,185,129,0.9); color:white;
+                   {% else %}
+                     background:rgba(239,68,68,0.85); color:white;
+                   {% endif %}">
+            <i class="fas fa-{{ 'toggle-on' if profile.is_available else 'toggle-off' }}"
+               style="font-size:1.1rem;"></i>
+            {{ 'Accepting Appointments' if profile.is_available else 'Not Accepting' }}
+          </button>
+        </form>
+        <a href="{{ url_for('doctor.dashboard') }}"
+           style="padding:10px 18px; border-radius:50px; font-weight:600; font-size:0.9rem;
+                  background:rgba(255,255,255,0.12); color:white; text-decoration:none;
+                  border:1px solid rgba(255,255,255,0.25); display:flex; align-items:center; gap:8px;">
+          <i class="fas fa-arrow-left"></i> Dashboard
+        </a>
+      </div>
+    </div>
+
+    <!-- Stats bar -->
+    <div style="display:flex; gap:24px; margin-top:24px; flex-wrap:wrap;">
+      <div style="background:rgba(255,255,255,0.1); border-radius:10px; padding:12px 20px;
+                  display:flex; align-items:center; gap:10px;">
+        <i class="fas fa-clock" style="color:rgba(255,255,255,0.7);"></i>
+        <div>
+          <div style="font-size:1.4rem; font-weight:700;">{{ slots|length }}</div>
+          <div style="font-size:0.78rem; opacity:0.75;">Active Slots</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,0.1); border-radius:10px; padding:12px 20px;
+                  display:flex; align-items:center; gap:10px;">
+        <i class="fas fa-calendar-week" style="color:rgba(255,255,255,0.7);"></i>
+        <div>
+          <div style="font-size:1.4rem; font-weight:700;">
+            {{ slots_by_day.values()|selectattr('__len__')|list|length }}
+          </div>
+          <div style="font-size:0.78rem; opacity:0.75;">Days Covered</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,0.1); border-radius:10px; padding:12px 20px;
+                  display:flex; align-items:center; gap:10px;">
+        <i class="fas fa-user-clock" style="color:rgba(255,255,255,0.7);"></i>
+        <div>
+          <div style="font-size:1.4rem; font-weight:700;">{{ profile.consultation_duration }} min</div>
+          <div style="font-size:0.78rem; opacity:0.75;">Default Duration</div>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
+
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+    <div style="border-radius:12px; padding:14px 20px; margin-bottom:16px;
+                display:flex; align-items:center; gap:12px;
+                {% if cat == 'success' %}background:#d1fae5; border-left:4px solid #10b981; color:#065f46;
+                {% elif cat == 'info'    %}background:#dbeafe; border-left:4px solid #3b82f6; color:#1e40af;
+                {% else                  %}background:#fee2e2; border-left:4px solid #ef4444; color:#991b1b;{% endif %}">
+      <i class="fas fa-{{ 'check-circle' if cat=='success' else 'info-circle' if cat=='info' else 'exclamation-circle' }}"></i>
+      {{ msg }}
+    </div>
+    {% endfor %}
+  {% endwith %}
+
+  <div style="display:grid; grid-template-columns: 420px 1fr; gap:24px; align-items:start;">
+
+    <!-- ════════════════════════════════════════
+         LEFT PANEL — ADD SLOT FORM
+    ════════════════════════════════════════ -->
+    <div>
+      <div style="background:white; border-radius:16px; overflow:hidden;
+                  box-shadow:0 4px 16px rgba(0,0,0,0.09); border:1px solid #e5e7eb;">
+
+        <!-- Form header -->
+        <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+                    padding:20px 24px; display:flex; align-items:center; gap:12px;">
+          <div style="background:rgba(255,255,255,0.2); border-radius:8px;
+                      width:38px; height:38px; display:flex; align-items:center; justify-content:center;">
+            <i class="fas fa-plus" style="color:white; font-size:1rem;"></i>
+          </div>
+          <div>
+            <h3 style="color:white; margin:0; font-size:1.05rem; font-weight:700;">Add Availability Slot</h3>
+            <p style="color:rgba(255,255,255,0.8); margin:0; font-size:0.8rem;">Define when patients can book you</p>
+          </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('doctor.availability') }}" id="slotForm"
+              style="padding:24px;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <!-- ① Day picker -->
+          <div style="margin-bottom:22px;">
+            <label style="display:block; font-weight:700; color:#374151; margin-bottom:10px; font-size:0.9rem;">
+              <i class="fas fa-calendar-day" style="color:#667eea; margin-right:6px;"></i>
+              Day of Week <span style="color:#ef4444;">*</span>
+            </label>
+            <div style="display:grid; grid-template-columns: repeat(7,1fr); gap:6px;" id="dayGrid">
+              {% set day_abbr = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] %}
+              {% set day_colors = ['#667eea','#f093fb','#4facfe','#11998e','#fa709a','#f6d365','#a18cd1'] %}
+              {% for d in days %}
+              <label style="cursor:pointer; text-align:center;">
+                <input type="radio" name="day_of_week" value="{{ d.value }}"
+                       style="display:none;" class="day-radio"
+                       {{ 'checked' if loop.first }}>
+                <div class="day-btn"
+                     data-color="{{ day_colors[loop.index0] }}"
+                     style="padding:8px 4px; border-radius:10px; font-size:0.78rem; font-weight:700;
+                            border:2px solid #e5e7eb; transition:all 0.2s ease; user-select:none;
+                            background:white; color:#6b7280;
+                            {{ 'background:' + day_colors[0] + '; color:white; border-color:' + day_colors[0] + ';' if loop.first }}">
+                  {{ day_abbr[loop.index0] }}
+                </div>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- ② Time presets -->
+          <div style="margin-bottom:16px;">
+            <label style="display:block; font-weight:700; color:#374151; margin-bottom:10px; font-size:0.9rem;">
+              <i class="fas fa-bolt" style="color:#f59e0b; margin-right:6px;"></i>
+              Quick Presets
+            </label>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              {% set presets = [
+                ('🌅 Morning','09:00','12:00'),
+                ('☀️ Afternoon','14:00','17:00'),
+                ('🌆 Evening','18:00','21:00'),
+                ('🌙 Night','21:00','23:00')
+              ] %}
+              {% for label, st, et in presets %}
+              <button type="button" class="preset-btn"
+                      data-start="{{ st }}" data-end="{{ et }}"
+                      style="padding:7px 12px; border-radius:50px; font-size:0.8rem; font-weight:600;
+                             border:1.5px solid #e5e7eb; background:white; color:#374151;
+                             cursor:pointer; transition:all 0.2s ease;">
+                {{ label }}
+              </button>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- ③ Start / End time row -->
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:18px;">
+            <div>
+              <label style="display:block; font-weight:600; color:#374151; margin-bottom:8px; font-size:0.85rem;">
+                <i class="fas fa-hourglass-start" style="color:#10b981; margin-right:4px;"></i>
+                Start Time <span style="color:#ef4444;">*</span>
+              </label>
+              <input type="time" name="start_time" id="startTime" required
+                     value="{{ form.start_time.data.strftime('%H:%M') if form.start_time.data else '' }}"
+                     style="width:100%; padding:11px 14px; border-radius:10px;
+                            border:1.5px solid #e5e7eb; font-size:1rem; font-weight:600;
+                            transition:border-color 0.2s; background:white; color:#1f2937;">
+            </div>
+            <div>
+              <label style="display:block; font-weight:600; color:#374151; margin-bottom:8px; font-size:0.85rem;">
+                <i class="fas fa-hourglass-end" style="color:#ef4444; margin-right:4px;"></i>
+                End Time <span style="color:#ef4444;">*</span>
+              </label>
+              <input type="time" name="end_time" id="endTime" required
+                     value="{{ form.end_time.data.strftime('%H:%M') if form.end_time.data else '' }}"
+                     style="width:100%; padding:11px 14px; border-radius:10px;
+                            border:1.5px solid #e5e7eb; font-size:1rem; font-weight:600;
+                            transition:border-color 0.2s; background:white; color:#1f2937;">
+            </div>
+          </div>
+
+          <!-- ④ Slot duration -->
+          <div style="margin-bottom:20px;">
+            <label style="display:block; font-weight:700; color:#374151; margin-bottom:10px; font-size:0.9rem;">
+              <i class="fas fa-stopwatch" style="color:#8b5cf6; margin-right:6px;"></i>
+              Slot Duration (per patient)
+            </label>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;" id="durationPicker">
+              {% for val, lbl in [(10,'10 min'),(15,'15 min'),(20,'20 min'),(30,'30 min'),(45,'45 min'),(60,'60 min')] %}
+              <label style="cursor:pointer;">
+                <input type="radio" name="slot_duration" value="{{ val }}"
+                       style="display:none;" class="dur-radio"
+                       {{ 'checked' if val == (profile.consultation_duration or 30) }}>
+                <div class="dur-btn"
+                     style="padding:8px 14px; border-radius:8px; font-size:0.82rem; font-weight:700;
+                            border:1.5px solid #e5e7eb; transition:all 0.2s; cursor:pointer;
+                            background:{% if val == (profile.consultation_duration or 30) %}#8b5cf6{% else %}white{% endif %};
+                            color:{% if val == (profile.consultation_duration or 30) %}white{% else %}#6b7280{% endif %};">
+                  {{ lbl }}
+                </div>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- ⑤ Live slot preview -->
+          <div id="slotPreview"
+               style="background:linear-gradient(135deg,rgba(102,126,234,0.07) 0%,rgba(118,75,162,0.07) 100%);
+                      border:1.5px solid rgba(102,126,234,0.25); border-radius:12px;
+                      padding:14px 18px; margin-bottom:20px; display:none;">
+            <div style="font-size:0.78rem; font-weight:700; color:#764ba2; text-transform:uppercase;
+                        letter-spacing:0.5px; margin-bottom:6px;">
+              <i class="fas fa-eye" style="margin-right:4px;"></i> Slot Preview
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span id="previewDay" style="background:#667eea; color:white; border-radius:6px;
+                                           padding:4px 10px; font-weight:700; font-size:0.85rem;"></span>
+              <span style="color:#374151; font-weight:600;" id="previewTime">—</span>
+              <span style="background:#8b5cf6; color:white; border-radius:6px;
+                           padding:4px 10px; font-size:0.78rem; font-weight:600;" id="previewDur"></span>
+            </div>
+            <div id="previewSlotCount"
+                 style="font-size:0.8rem; color:#6b7280; margin-top:6px;"></div>
+          </div>
+
+          <!-- Validation error -->
+          <div id="timeError"
+               style="display:none; background:#fee2e2; border-radius:8px; padding:10px 14px;
+                      color:#991b1b; font-size:0.85rem; font-weight:600; margin-bottom:14px;">
+            <i class="fas fa-exclamation-circle"></i> End time must be after start time.
+          </div>
+
+          <!-- Server-side form errors -->
+          {% for field in form %}
+            {% if field.errors %}
+              {% for err in field.errors %}
+              <div style="background:#fee2e2; border-radius:8px; padding:10px 14px;
+                          color:#991b1b; font-size:0.85rem; margin-bottom:10px;">
+                <i class="fas fa-exclamation-circle"></i> {{ field.label.text }}: {{ err }}
+              </div>
+              {% endfor %}
+            {% endif %}
+          {% endfor %}
+
+          <!-- Submit -->
+          <button type="submit" id="submitBtn"
+                  style="width:100%; padding:13px; border-radius:12px; font-weight:700; font-size:1rem;
+                         background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white;
+                         border:none; cursor:pointer; display:flex; align-items:center;
+                         justify-content:center; gap:10px; transition:all 0.2s ease;
+                         box-shadow:0 4px 12px rgba(102,126,234,0.35);">
+            <i class="fas fa-plus-circle"></i> Add Availability Slot
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         RIGHT PANEL — WEEKLY CALENDAR
+    ════════════════════════════════════════ -->
+    <div>
+      <div style="background:white; border-radius:16px; overflow:hidden;
+                  box-shadow:0 4px 16px rgba(0,0,0,0.09); border:1px solid #e5e7eb;">
+
+        <!-- Calendar header -->
+        <div style="background:linear-gradient(135deg,#11998e 0%,#38ef7d 100%);
+                    padding:20px 24px; display:flex; align-items:center; gap:12px;">
+          <div style="background:rgba(255,255,255,0.2); border-radius:8px;
+                      width:38px; height:38px; display:flex; align-items:center; justify-content:center;">
+            <i class="fas fa-calendar-week" style="color:white; font-size:1rem;"></i>
+          </div>
+          <div>
+            <h3 style="color:white; margin:0; font-size:1.05rem; font-weight:700;">Weekly Schedule</h3>
+            <p style="color:rgba(255,255,255,0.8); margin:0; font-size:0.8rem;">
+              {{ slots|length }} slot{{ 's' if slots|length != 1 }} across your week
+            </p>
+          </div>
+        </div>
+
+        <!-- Day rows -->
+        <div style="padding:8px 0;">
+          {% set day_gradients = {
+            'MONDAY':    'linear-gradient(135deg,#667eea,#764ba2)',
+            'TUESDAY':   'linear-gradient(135deg,#f093fb,#f5576c)',
+            'WEDNESDAY': 'linear-gradient(135deg,#4facfe,#00f2fe)',
+            'THURSDAY':  'linear-gradient(135deg,#11998e,#38ef7d)',
+            'FRIDAY':    'linear-gradient(135deg,#fa709a,#fee140)',
+            'SATURDAY':  'linear-gradient(135deg,#f6d365,#fda085)',
+            'SUNDAY':    'linear-gradient(135deg,#a18cd1,#fbc2eb)'
+          } %}
+          {% set day_icons = {
+            'MONDAY':'m','TUESDAY':'t','WEDNESDAY':'w',
+            'THURSDAY':'t','FRIDAY':'f','SATURDAY':'s','SUNDAY':'s'
+          } %}
+
+          {% for day in days %}
+          {% set day_slots = slots_by_day[day] %}
+          {% set has_slots  = day_slots|length > 0 %}
+
+          <div style="border-bottom:1px solid #f3f4f6; padding:14px 20px;
+                      transition:background 0.15s ease;"
+               onmouseover="this.style.background='#f9fafb'"
+               onmouseout="this.style.background='white'">
+
+            <!-- Day label row -->
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:{{ '10px' if has_slots else '0' }};">
+              <div style="width:44px; height:44px; border-radius:12px; flex-shrink:0;
+                          display:flex; align-items:center; justify-content:center;
+                          font-weight:800; font-size:0.85rem; color:white;
+                          background:{{ day_gradients[day.name] }};
+                          box-shadow:0 2px 8px rgba(0,0,0,0.12);
+                          opacity:{{ '1' if has_slots else '0.35' }};">
+                {{ day.name[:3] }}
+              </div>
+              <div style="flex:1;">
+                <div style="font-weight:700; font-size:0.95rem;
+                            color:{{ '#1f2937' if has_slots else '#9ca3af' }};">
+                  {{ day.name|title }}
+                </div>
+                {% if has_slots %}
+                <div style="font-size:0.78rem; color:#6b7280;">
+                  {{ day_slots|length }} slot{{ 's' if day_slots|length != 1 }}
+                  &nbsp;·&nbsp;
+                  {{ day_slots|selectattr('is_active')|list|length }} active
+                </div>
+                {% else %}
+                <div style="font-size:0.78rem; color:#d1d5db; font-style:italic;">No slots added</div>
+                {% endif %}
+              </div>
+
+              {% if has_slots %}
+              <!-- Quick add same day shortcut -->
+              <button type="button" class="quick-day-btn"
+                      data-day="{{ day.value }}"
+                      title="Prefill this day in the form"
+                      style="width:32px; height:32px; border-radius:8px; border:1.5px solid #e5e7eb;
+                             background:white; cursor:pointer; display:flex; align-items:center;
+                             justify-content:center; transition:all 0.2s ease; color:#667eea; font-size:0.85rem;">
+                <i class="fas fa-plus"></i>
+              </button>
+              {% endif %}
+            </div>
+
+            <!-- Slot cards for this day -->
+            {% if has_slots %}
+            <div style="display:flex; flex-direction:column; gap:8px; padding-left:56px;">
+              {% for slot in day_slots %}
+              <div style="display:flex; align-items:center; gap:10px; padding:10px 14px;
+                          border-radius:10px; border:1.5px solid;
+                          transition:all 0.2s ease;
+                          {% if slot.is_active %}
+                            background:#f0fdf4; border-color:#86efac;
+                          {% else %}
+                            background:#f9fafb; border-color:#e5e7eb; opacity:0.65;
+                          {% endif %}">
+
+                <!-- Time block -->
+                <div style="flex:1;">
+                  <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <span style="font-weight:700; font-size:0.95rem; color:#1f2937;">
+                      <i class="fas fa-clock" style="font-size:0.75rem; margin-right:3px;
+                        color:{{ '#10b981' if slot.is_active else '#9ca3af' }};"></i>
+                      {{ slot.start_time.strftime('%I:%M %p') }}
+                      <span style="color:#9ca3af; margin:0 4px;">→</span>
+                      {{ slot.end_time.strftime('%I:%M %p') }}
+                    </span>
+                    <span style="background:{{ '#ddd6fe' if slot.is_active else '#f3f4f6' }};
+                                 color:{{ '#6d28d9' if slot.is_active else '#9ca3af' }};
+                                 border-radius:6px; padding:2px 8px; font-size:0.75rem; font-weight:700;">
+                      {{ slot.slot_duration }} min
+                    </span>
+                    {% set total_mins = ((slot.end_time.hour * 60 + slot.end_time.minute) -
+                                        (slot.start_time.hour * 60 + slot.start_time.minute)) %}
+                    {% set num_slots = (total_mins // slot.slot_duration) %}
+                    {% if num_slots > 0 %}
+                    <span style="background:#fef3c7; color:#92400e;
+                                 border-radius:6px; padding:2px 8px; font-size:0.72rem; font-weight:600;">
+                      ~{{ num_slots }} appts
+                    </span>
+                    {% endif %}
+                    {% if not slot.is_active %}
+                    <span style="background:#fee2e2; color:#991b1b;
+                                 border-radius:6px; padding:2px 8px; font-size:0.72rem; font-weight:700;">
+                      Paused
+                    </span>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <!-- Action buttons -->
+                <div style="display:flex; gap:6px; flex-shrink:0;">
+                  <!-- Toggle active/pause -->
+                  <form method="POST"
+                        action="{{ url_for('doctor.toggle_slot', avail_id=slot.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit"
+                            title="{{ 'Pause slot' if slot.is_active else 'Activate slot' }}"
+                            style="width:34px; height:34px; border-radius:8px; border:1.5px solid;
+                                   cursor:pointer; display:flex; align-items:center;
+                                   justify-content:center; transition:all 0.2s ease; font-size:0.85rem;
+                                   {% if slot.is_active %}
+                                     background:#fef3c7; border-color:#fde68a; color:#92400e;
+                                   {% else %}
+                                     background:#d1fae5; border-color:#6ee7b7; color:#065f46;
+                                   {% endif %}">
+                      <i class="fas fa-{{ 'pause' if slot.is_active else 'play' }}"></i>
+                    </button>
+                  </form>
+
+                  <!-- Delete -->
+                  <form method="POST"
+                        action="{{ url_for('doctor.delete_availability', avail_id=slot.id) }}"
+                        onsubmit="return confirm('Remove this slot?\n{{ day.name|title }} {{ slot.start_time.strftime("%I:%M %p") }} – {{ slot.end_time.strftime("%I:%M %p") }}')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit"
+                            title="Delete slot"
+                            style="width:34px; height:34px; border-radius:8px;
+                                   background:#fee2e2; border:1.5px solid #fca5a5;
+                                   color:#991b1b; cursor:pointer; display:flex; align-items:center;
+                                   justify-content:center; transition:all 0.2s ease; font-size:0.85rem;">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
+                </div>
+
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Empty state -->
+        {% if not slots %}
+        <div style="padding:48px 24px; text-align:center;">
+          <div style="font-size:3.5rem; opacity:0.15; margin-bottom:16px;">📅</div>
+          <h4 style="color:#6b7280; margin-bottom:8px; font-size:1.1rem;">No slots yet</h4>
+          <p style="color:#9ca3af; font-size:0.9rem; max-width:280px; margin:0 auto;">
+            Use the form on the left to add your first availability slot.
+          </p>
+        </div>
+        {% endif %}
+
+      </div>
+
+      <!-- Help card -->
+      <div style="background:linear-gradient(135deg,rgba(102,126,234,0.06),rgba(118,75,162,0.06));
+                  border:1.5px solid rgba(102,126,234,0.15); border-radius:14px;
+                  padding:18px 22px; margin-top:16px;">
+        <div style="font-weight:700; color:#4b5563; margin-bottom:10px; font-size:0.9rem;">
+          <i class="fas fa-lightbulb" style="color:#f59e0b; margin-right:6px;"></i>
+          How slots work
+        </div>
+        <ul style="margin:0; padding-left:20px; color:#6b7280; font-size:0.85rem; line-height:2;">
+          <li>Slots repeat <strong>every week</strong> on the selected day.</li>
+          <li>Patients book individual appointments within your time range.</li>
+          <li><strong>Pause</strong> a slot temporarily without deleting it.</li>
+          <li>The <strong>~appts</strong> badge shows how many patients fit in the block.</li>
+          <li>Use the global toggle at the top to stop all bookings instantly.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div><!-- end grid -->
+
+</div><!-- end container -->
+
+<!-- ════════════════════════════════════════
+     JAVASCRIPT — Day picker, presets, preview
+════════════════════════════════════════ -->
+<style>
+  input[type="time"]:focus { border-color: #667eea !important; outline: none; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
+  .preset-btn:hover { background: #667eea !important; color: white !important; border-color: #667eea !important; }
+  .quick-day-btn:hover { background: #667eea !important; color: white !important; border-color: #667eea !important; }
+  #submitBtn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.45) !important; }
+</style>
+
+<script>
+(function () {
+  /* ── Day picker ── */
+  const dayLabels = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  const dayColors = ['#667eea','#f093fb','#4facfe','#11998e','#fa709a','#f6d365','#a18cd1'];
+
+  document.querySelectorAll('.day-radio').forEach(function(radio, idx) {
+    radio.addEventListener('change', function() {
+      document.querySelectorAll('.day-btn').forEach(function(btn, i) {
+        if (i === idx) {
+          btn.style.background    = dayColors[i];
+          btn.style.color         = 'white';
+          btn.style.borderColor   = dayColors[i];
+          btn.style.boxShadow     = '0 3px 10px ' + dayColors[i] + '55';
+        } else {
+          btn.style.background    = 'white';
+          btn.style.color         = '#6b7280';
+          btn.style.borderColor   = '#e5e7eb';
+          btn.style.boxShadow     = 'none';
+        }
+      });
+      updatePreview();
+    });
+
+    // Click the visible div → click the hidden radio
+    radio.nextElementSibling.addEventListener('click', function() {
+      radio.checked = true;
+      radio.dispatchEvent(new Event('change'));
+    });
+  });
+
+  /* ── Duration picker ── */
+  document.querySelectorAll('.dur-radio').forEach(function(radio) {
+    radio.nextElementSibling.addEventListener('click', function() {
+      radio.checked = true;
+      document.querySelectorAll('.dur-btn').forEach(function(btn) {
+        btn.style.background = 'white';
+        btn.style.color      = '#6b7280';
+        btn.style.borderColor= '#e5e7eb';
+      });
+      radio.nextElementSibling.style.background  = '#8b5cf6';
+      radio.nextElementSibling.style.color       = 'white';
+      radio.nextElementSibling.style.borderColor = '#8b5cf6';
+      updatePreview();
+    });
+  });
+
+  /* ── Quick-day shortcut buttons (in schedule) ── */
+  document.querySelectorAll('.quick-day-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var dayVal = parseInt(this.dataset.day);
+      document.querySelectorAll('.day-radio').forEach(function(r, i) {
+        if (parseInt(r.value) === dayVal) {
+          r.checked = true;
+          r.dispatchEvent(new Event('change'));
+        }
+      });
+      // Scroll form into view
+      document.getElementById('slotForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  /* ── Time presets ── */
+  document.querySelectorAll('.preset-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.getElementById('startTime').value = this.dataset.start;
+      document.getElementById('endTime').value   = this.dataset.end;
+      // Visual feedback
+      document.querySelectorAll('.preset-btn').forEach(function(b) {
+        b.style.background   = 'white';
+        b.style.color        = '#374151';
+        b.style.borderColor  = '#e5e7eb';
+      });
+      btn.style.background  = '#667eea';
+      btn.style.color       = 'white';
+      btn.style.borderColor = '#667eea';
+      updatePreview();
+    });
+  });
+
+  /* ── Live preview ── */
+  function fmt24to12(t) {
+    if (!t) return '';
+    var parts = t.split(':');
+    var h = parseInt(parts[0]), m = parts[1];
+    var ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return h + ':' + m + ' ' + ampm;
+  }
+
+  function updatePreview() {
+    var st = document.getElementById('startTime').value;
+    var et = document.getElementById('endTime').value;
+    var previewBox  = document.getElementById('slotPreview');
+    var errBox      = document.getElementById('timeError');
+    var previewDay  = document.getElementById('previewDay');
+    var previewTime = document.getElementById('previewTime');
+    var previewDur  = document.getElementById('previewDur');
+    var previewCnt  = document.getElementById('previewSlotCount');
+
+    // Find selected day label
+    var selDayIdx = 0;
+    document.querySelectorAll('.day-radio').forEach(function(r, i) {
+      if (r.checked) selDayIdx = i;
+    });
+
+    // Find selected duration
+    var selDur = 30;
+    document.querySelectorAll('.dur-radio').forEach(function(r) {
+      if (r.checked) selDur = parseInt(r.value);
+    });
+
+    if (st && et) {
+      var stMin = parseInt(st.split(':')[0]) * 60 + parseInt(st.split(':')[1]);
+      var etMin = parseInt(et.split(':')[0]) * 60 + parseInt(et.split(':')[1]);
+
+      if (etMin <= stMin) {
+        errBox.style.display    = 'block';
+        previewBox.style.display= 'none';
+        return;
+      }
+      errBox.style.display = 'none';
+
+      previewDay.textContent  = dayLabels[selDayIdx];
+      previewTime.textContent = fmt24to12(st) + ' → ' + fmt24to12(et);
+      previewDur.textContent  = selDur + ' min/slot';
+
+      var totalMins = etMin - stMin;
+      var numSlots  = Math.floor(totalMins / selDur);
+      previewCnt.textContent = numSlots > 0
+        ? 'This block fits ~' + numSlots + ' patient appointment' + (numSlots !== 1 ? 's' : '')
+        : 'Block too short for even one slot at this duration';
+
+      previewBox.style.display = 'block';
+    } else {
+      previewBox.style.display = 'none';
+      errBox.style.display     = 'none';
+    }
+  }
+
+  document.getElementById('startTime').addEventListener('change', updatePreview);
+  document.getElementById('endTime').addEventListener('change',   updatePreview);
+
+  /* ── Form submit guard ── */
+  document.getElementById('slotForm').addEventListener('submit', function(e) {
+    var st    = document.getElementById('startTime').value;
+    var et    = document.getElementById('endTime').value;
+    var stMin = parseInt(st.split(':')[0]) * 60 + parseInt(st.split(':')[1]);
+    var etMin = parseInt(et.split(':')[0]) * 60 + parseInt(et.split(':')[1]);
+    if (et && st && etMin <= stMin) {
+      e.preventDefault();
+      document.getElementById('timeError').style.display = 'block';
+    }
+  });
+
+  // Trigger initial preview if times are pre-filled (after server-side error)
+  updatePreview();
+})();
+</script>
 {% endblock %}

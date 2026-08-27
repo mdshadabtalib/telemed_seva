@@ -1,19 +1,274 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container">
-  <h1 class="mb-6">Doctor Profile</h1>
-  <div class="card"><div class="card-body">
-    <form method="POST" enctype="multipart/form-data"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <div class="form-row"><div class="form-group"><label class="form-label">First Name</label><input name="first_name" class="form-control" value="{{ profile.first_name }}" required></div><div class="form-group"><label class="form-label">Last Name</label><input name="last_name" class="form-control" value="{{ profile.last_name }}" required></div></div>
-      <div class="form-row"><div class="form-group"><label class="form-label">Phone</label><input name="phone" class="form-control" value="{{ profile.phone or '' }}"></div><div class="form-group"><label class="form-label">Specialty</label><select name="specialty_id" class="form-control"><option value="">Select Specialty</option>{% for s in specialties %}<option value="{{ s.id }}" {{ 'selected' if profile.specialty_id == s.id }}>{{ s.name }}</option>{% endfor %}</select></div></div>
-      <div class="form-group"><label class="form-label">Qualifications</label><input name="qualifications" class="form-control" value="{{ profile.qualifications or '' }}" placeholder="e.g. MBBS, MD (Medicine)"></div>
-      <div class="form-row"><div class="form-group"><label class="form-label">Registration Number</label><input name="registration_number" class="form-control" value="{{ profile.registration_number or '' }}"></div><div class="form-group"><label class="form-label">Experience (years)</label><input type="number" name="experience_years" class="form-control" value="{{ profile.experience_years }}" min="0"></div></div>
-      <div class="form-group"><label class="form-label">Languages (comma-separated)</label><input name="languages" class="form-control" value="{{ profile.languages or '' }}" placeholder="English, Hindi, Tamil"></div>
-      <div class="form-row"><div class="form-group"><label class="form-label">Consultation Fee ({{ currency }})</label><input type="number" name="consultation_fee" class="form-control" value="{{ profile.consultation_fee }}" step="0.01" min="0"></div><div class="form-group"><label class="form-label">Duration (minutes)</label><input type="number" name="consultation_duration" class="form-control" value="{{ profile.consultation_duration }}" min="5"></div></div>
-      <div class="form-group"><label class="form-label">Bio</label><textarea name="bio" class="form-control" rows="3">{{ profile.bio or '' }}</textarea></div>
-      <div class="form-group"><label class="form-label">Profile Photo</label><input type="file" name="avatar" class="form-control" accept="image/*"></div>
-      <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save"></i> Save Profile</button>
-    </form>
-  </div></div>
+<div class="container" style="max-width: 860px;">
+
+  <!-- Profile Header -->
+  <div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); border-radius: var(--radius-lg); padding: var(--space-8); margin-bottom: var(--space-6); color: white; box-shadow: 0 8px 24px rgba(17, 153, 142, 0.25);">
+    <div style="display: flex; align-items: center; gap: var(--space-5);">
+      <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; border: 3px solid rgba(255,255,255,0.4);">
+        👨‍⚕️
+      </div>
+      <div>
+        <h1 style="color: white; margin-bottom: var(--space-1); font-size: 1.75rem;">Doctor Profile</h1>
+        <p style="opacity: 0.92; margin: 0; font-size: 1rem;">Update your professional information, specialization, and consultation settings</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}" style="border-radius: var(--radius-lg); margin-bottom: var(--space-4); display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4);">
+      <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}"></i>
+      {{ message }}
+    </div>
+    {% endfor %}
+  {% endwith %}
+
+  <form method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <!-- Section 1: Personal Information -->
+    <div class="card" style="border-radius: var(--radius-lg); margin-bottom: var(--space-5); box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;">
+      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: var(--space-4) var(--space-6); display: flex; align-items: center; gap: var(--space-3);">
+        <i class="fas fa-user-circle" style="color: white; font-size: 1.2rem;"></i>
+        <h3 style="color: white; margin: 0; font-size: 1.1rem; font-weight: 600;">Personal Information</h3>
+      </div>
+      <div class="card-body" style="padding: var(--space-6);">
+        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+          <div class="form-group">
+            <label class="form-label" style="font-weight: 600; color: var(--gray-700); display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
+              <i class="fas fa-id-card" style="color: var(--primary); font-size: 0.9rem;"></i> First Name
+            </label>
+            <input name="first_name" class="form-control" value="{{ profile.first_name }}" required
+              style="border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); border: 1.5px solid var(--gray-200); transition: border-color 0.2s ease; font-size: 1rem;"
+              placeholder="Your first name">
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="font-weight: 600; color: var(--gray-700); display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
+              <i class="fas fa-id-card" style="color: var(--primary); font-size: 0.9rem;"></i> Last Name
+            </label>
+            <input name="last_name" class="form-control" value="{{ profile.last_name }}" required
+              style="border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); border: 1.5px solid var(--gray-200); transition: border-color 0.2s ease; font-size: 1rem;"
+              placeholder="Your last name">
+          </div>
+        </div>
+        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); margin-top: var(--space-4);">
+          <div class="form-group">
+            <label class="form-label" style="font-weight: 600; color: var(--gray-700); display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
+              <i class="fas fa-phone" style="color: var(--primary); font-size: 0.9rem;"></i> Phone Number
+            </label>
+            <input name="phone" class="form-control" value="{{ profile.phone or '' }}"
+              style="border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); border: 1.5px solid var(--gray-200); font-size: 1rem;"
+              placeholder="+91 XXXXX XXXXX">
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="font-weight: 600; color: var(--gray-700); display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
+              <i class="fas fa-language" style="color: var(--primary); font-size: 0.9rem;"></i> Languages Spoken
+            </label>
+            <input name="languages" class="form-control" value="{{ profile.languages or '' }}"
+              style="border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); border: 1.5px solid var(--gray-200); font-size: 1rem;"
+              placeholder="English, Hindi, Tamil">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Professional Details -->
+    <div class="card" style="border-radius: var(--radius-lg); margin-bottom: var(--space-5); box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;">
+      <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: var(--space-4) var(--space-6); display: flex; align-items: center; gap: var(--space-3);">
+        <i class="fas fa-stethoscope" style="color: white; font-size: 1.2rem;"></i>
+        <h3 style="color: white; margin: 0; font-size: 1.1rem; font-weight: 600;">Medical Specialization</h3>
+      </div>
+      <div class="card-body" style="padding: var(--space-6);">
+
+        <!-- Specialty Dropdown with Search -->
+        <div class="form-group" style="margin-bottom: var(--space-5);">
+          <label class="form-label" style="font-weight: 600; color: var(--gray-700); display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
+            <i class="fas fa-user-doctor" style="color: #f5576c; font-size: 0.9rem;"></i>
+            Medical Specialty
+            <span style="color: var(--danger); margin-left: 2px;">*</span>
+          </label>
+          <select name="specialty_id" class="form-control"
+            style="border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); border: 1.5px solid var(--gray-200); font-size: 1rem; cursor: pointer; background-image: url('data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'><path fill=\'%23666\' d=\'M6 8L1 3h10z\'/></svg>'); background-repeat: no-repeat; background-position: right 12px center;">
+            <option value="">— Select Your Specialty —</option>
+            <!-- Primary Care -->
+            <optgroup label="🏥 Primary Care">
+              {% for s in specialties if s.name in ['General Medicine','Family Medicine','Internal Medicine'] %}
+              <option value="{{ s.id }}" {{ 'selected' if profile.specialty_id == s.id }}>{{ s.name }}</option>
+              {% endfor %}
+            </optgroup>
+            <!-- Surgical Specialties -->
+            <optgroup label="🔪 Surgical Specialties">
+              {% for s in specialties if s.name in ['General Surgery','Orthopedics','Neurosurgery','Cardiothoracic Surgery','Plastic Surgery'] %}
+              <option value="{{ s.id }}" {{ 'selected' if profile.specialty_id == s.id }}>{{ s.name }}</option>
+              {% endfor %}
+            </optgroup>
+            <!-- Medical Specialties -->
+            <optgroup label="💊 Medical Specialties">
+              {% for s in specialties if s.name in ['Cardiology','Neurology','Dermatology','Gastroenterology','Pulmonology','Nephrology','Endocrinology','Rheumatology','Hematology','Oncology','Infectious Diseases'] %}
+              <option value="{{ s.id }}" {{ 'selected' if profile.specialty_id == s.id }}>{{ s.name }}</option>
+              {% endfor %}
+            </optgroup>
+            <!-- Women's & Children's Health -->
+            <optgroup label="👶 Women's & Children's Health">
+              {% for s in specialties if s.name in ["Obstetrics & Gynecology","Fertility & IVF","Pediatrics","Neonatology"] %}
+              <option value="{{ s.id }}" {{ 'selected' if profile.specialty_id == s.id }}>{{ s.name }}</option>
+              {% endfor %}
+            </optgroup>
+            <!-- Mental Health -->
+            <optgroup label="🧠 Mental Health">
+              {% for s in specialties if s.name in ['Psychiatry','Psychology'] %}
+              <option value="{{ s.id }}" {{ 'selected' if profile.specialty_id == s.id }}>{{ s.name }}</option>
+              {% endfor %}
+            </optgroup>
+            <!-- Eye, ENT & Dental -->
+            <optgroup label="👁️ Eye, ENT & Dental">
+              {% for s in specialties if s.name in ['Ophthalmology','ENT (Otolaryngology)','Dentistry','Orthodontics'] %}
+              <option value="{{ s.id }}" {{ 'selected' if profile.specialty_id == s.id }}>{{ s.name }}</option>
+              {% endfor %}
+            </optgroup>
+            <!-- Other Specialties -->
+            <optgroup label="🔬 Other Specialties">
+              {% for s in specialties if s.name in ['Urology','Anesthesiology','Radiology','Pathology','Physical Medicine','Sports Medicine','Emergency Medicine','Geriatrics','Nutrition & Dietetics','Ayurveda','Homeopathy'] %}
+              <option value="{{ s.id }}" {{ 'selected' if profile.specialty_id == s.id }}>{{ s.name }}</option>
+              {% endfor %}
+            </optgroup>
+          </select>
+          <p style="margin-top: var(--space-2); font-size: 0.82rem; color: var(--gray-500);">
+            <i class="fas fa-info-circle"></i> 42 specialties available across all medical fields
+          </p>
+        </div>
+
+        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+          <div class="form-group">
+            <label class="form-label" style="font-weight: 600; color: var(--gray-700); display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
+              <i class="fas fa-graduation-cap" style="color: #f5576c; font-size: 0.9rem;"></i> Qualifications
+            </label>
+            <input name="qualifications" class="form-control" value="{{ profile.qualifications or '' }}"
+              style="border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); border: 1.5px solid var(--gray-200); font-size: 1rem;"
+              placeholder="e.g. MBBS, MD (Medicine), DNB">
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="font-weight: 600; color: var(--gray-700); display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
+              <i class="fas fa-id-badge" style="color: #f5576c; font-size: 0.9rem;"></i> Registration Number
+            </label>
+            <input name="registration_number" class="form-control" value="{{ profile.registration_number or '' }}"
+              style="border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); border: 1.5px solid var(--gray-200); font-size: 1rem;"
+              placeholder="MCI / State Council Reg. No.">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: var(--space-4);">
+          <label class="form-label" style="font-weight: 600; color: var(--gray-700); display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
+            <i class="fas fa-briefcase-medical" style="color: #f5576c; font-size: 0.9rem;"></i> Years of Experience
+          </label>
+          <div style="display: flex; align-items: center; gap: var(--space-3);">
+            <input type="number" name="experience_years" class="form-control" value="{{ profile.experience_years }}" min="0" max="60"
+              style="border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); border: 1.5px solid var(--gray-200); font-size: 1rem; width: 120px;">
+            <span style="color: var(--gray-600); font-size: 0.95rem;">years of clinical practice</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Consultation Settings -->
+    <div class="card" style="border-radius: var(--radius-lg); margin-bottom: var(--space-5); box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;">
+      <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: var(--space-4) var(--space-6); display: flex; align-items: center; gap: var(--space-3);">
+        <i class="fas fa-video" style="color: white; font-size: 1.2rem;"></i>
+        <h3 style="color: white; margin: 0; font-size: 1.1rem; font-weight: 600;">Consultation Settings</h3>
+      </div>
+      <div class="card-body" style="padding: var(--space-6);">
+        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+          <div class="form-group">
+            <label class="form-label" style="font-weight: 600; color: var(--gray-700); display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
+              <i class="fas fa-indian-rupee-sign" style="color: #00b4d8; font-size: 0.9rem;"></i> Consultation Fee ({{ currency }})
+            </label>
+            <div style="position: relative;">
+              <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--gray-500); font-weight: 600;">₹</span>
+              <input type="number" name="consultation_fee" class="form-control" value="{{ profile.consultation_fee }}" step="0.01" min="0"
+                style="border-radius: var(--radius-md); padding: var(--space-3) var(--space-4) var(--space-3) 32px; border: 1.5px solid var(--gray-200); font-size: 1rem;"
+                placeholder="500.00">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="font-weight: 600; color: var(--gray-700); display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
+              <i class="fas fa-clock" style="color: #00b4d8; font-size: 0.9rem;"></i> Session Duration
+            </label>
+            <div style="display: flex; align-items: center; gap: var(--space-3);">
+              <input type="number" name="consultation_duration" class="form-control" value="{{ profile.consultation_duration }}" min="5" max="120"
+                style="border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); border: 1.5px solid var(--gray-200); font-size: 1rem; width: 100px;">
+              <span style="color: var(--gray-600); font-size: 0.95rem;">minutes per session</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top: var(--space-4);">
+          <label class="form-label" style="font-weight: 600; color: var(--gray-700); display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
+            <i class="fas fa-align-left" style="color: #00b4d8; font-size: 0.9rem;"></i> Professional Bio
+          </label>
+          <textarea name="bio" class="form-control" rows="4"
+            style="border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); border: 1.5px solid var(--gray-200); font-size: 1rem; resize: vertical;"
+            placeholder="Describe your experience, areas of expertise, treatment approach, and any special training…">{{ profile.bio or '' }}</textarea>
+          <p style="margin-top: var(--space-2); font-size: 0.82rem; color: var(--gray-500);">
+            <i class="fas fa-lightbulb"></i> A good bio helps patients understand your approach and builds trust.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 4: Profile Photo -->
+    <div class="card" style="border-radius: var(--radius-lg); margin-bottom: var(--space-6); box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;">
+      <div style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); padding: var(--space-4) var(--space-6); display: flex; align-items: center; gap: var(--space-3);">
+        <i class="fas fa-camera" style="color: white; font-size: 1.2rem;"></i>
+        <h3 style="color: white; margin: 0; font-size: 1.1rem; font-weight: 600;">Profile Photo</h3>
+      </div>
+      <div class="card-body" style="padding: var(--space-6);">
+        <div style="display: flex; align-items: center; gap: var(--space-6); flex-wrap: wrap;">
+          <div style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); display: flex; align-items: center; justify-content: center; font-size: 3rem; flex-shrink: 0; box-shadow: 0 4px 12px rgba(250, 112, 154, 0.3);">
+            {% if profile.avatar_url %}
+            <img src="{{ profile.avatar_url }}" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+            {% else %}
+            👨‍⚕️
+            {% endif %}
+          </div>
+          <div style="flex: 1;">
+            <label class="form-label" style="font-weight: 600; color: var(--gray-700); margin-bottom: var(--space-2); display: block;">
+              Upload New Photo
+            </label>
+            <input type="file" name="avatar" class="form-control" accept="image/*"
+              style="border-radius: var(--radius-md); padding: var(--space-3); border: 1.5px solid var(--gray-200);">
+            <p style="margin-top: var(--space-2); font-size: 0.82rem; color: var(--gray-500);">
+              <i class="fas fa-info-circle"></i> Accepted: JPG, PNG. Max 2MB. Square image recommended.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Save Button -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-8);">
+      <a href="{{ url_for('doctor.dashboard') }}" class="btn btn-outline" style="display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-6);">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+      </a>
+      <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); border: none; padding: var(--space-3) var(--space-8); font-size: 1.05rem; font-weight: 600; border-radius: var(--radius-md); box-shadow: 0 4px 12px rgba(17, 153, 142, 0.3); display: flex; align-items: center; gap: var(--space-3); transition: all 0.2s ease;">
+        <i class="fas fa-save"></i> Save Profile
+      </button>
+    </div>
+  </form>
 </div>
+
+<style>
+  .form-control:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    outline: none;
+  }
+  select.form-control option {
+    padding: 8px;
+  }
+  button[type="submit"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(17, 153, 142, 0.4) !important;
+  }
+</style>
 {% endblock %}
