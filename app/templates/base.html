@@ -60,8 +60,6 @@
         {% else %}
           <li><a href="{{ url_for('appointments.search_doctors') }}"><i class="fas fa-search"></i> Find Doctors</a></li>
           <li><a href="{{ url_for('pharmacy.catalog') }}"><i class="fas fa-store"></i> Pharmacy</a></li>
-          <li><a href="{{ url_for('auth.login') }}"><i class="fas fa-sign-in-alt"></i> Login</a></li>
-          <li><a href="{{ url_for('auth.register') }}"><i class="fas fa-user-plus"></i> Register</a></li>
         {% endif %}
       </ul>
 
@@ -95,8 +93,8 @@
           </div>
           <a href="{{ url_for('auth.logout') }}" class="btn btn-outline btn-sm">Logout</a>
         {% else %}
-          <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-sm">Log In</a>
-          <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm">Sign Up</a>
+          <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-sm">Log In</a>
+          <a href="{{ url_for('auth.register') }}" class="btn btn-outline btn-sm">Sign Up</a>
         {% endif %}
       </div>
     </div>
